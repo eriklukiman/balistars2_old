@@ -1,0 +1,40 @@
+.container{
+  /*border: 1px solid black;*/
+  width: 76mm;
+  margin-top: 0px;
+  margin-left: 0px;
+  font-family: arial;
+  font-size:17px;
+}
+
+td{
+    font-size: 17px;
+    height:5px;
+}
+tr{
+    height:5px;
+}
+th{
+    height:5px;
+}
+
+@media print {
+  html, body {
+    width: 76mm;
+  }
+  tr{
+      height:5px;
+  }
+  th{
+      height:5px;
+  }
+  td{
+      height:5px;
+  }
+  * {
+      -webkit-print-color-adjust: exact;
+  }
+  /*.barcode {page-break-after: always;}*/
+
+}
+

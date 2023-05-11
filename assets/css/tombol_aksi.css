@@ -1,0 +1,13 @@
+/* ini CSS untuk tombol drop down aksi */
+.tombolDropDown{
+  margin-left: 8px; 
+  margin-bottom: 5px; 
+  width: 92%;
+  text-align: left !important;
+}
+
+.tombolDropDownLast{
+  margin-left: 8px; 
+  width: 92%;
+  text-align: left !important;
+}

@@ -1,0 +1,89 @@
+    .container{
+      /*border: 1px solid black;*/
+      width: 76mm;
+      margin-top: 0px;
+      margin-left: 0px;
+      font-family: arial;
+      font-size:17px;
+    }
+
+    td{
+        font-size: 17px;
+        height:5px;
+    }
+    tr{
+        height:5px;
+    }
+    th{
+        height:5px;
+    }
+
+    @media print {
+        .hidden-print,
+        .hidden-print * {
+            display: none !important;
+        }
+        
+      html, body {
+        width: 76mm;
+      }
+      tr{
+          height:5px;
+      }
+      th{
+          height:5px;
+      }
+      td{
+          height:5px;
+      }
+      * {
+          -webkit-print-color-adjust: exact;
+      }
+      /*.barcode {page-break-after: always;}*/
+
+    }
+
+
+/*
+table {
+    border-collapse: collapse;
+}
+
+td.description,
+th.description {
+    width: 75px;
+    max-width: 75px;
+}
+
+td.quantity,
+th.quantity {
+    width: 40px;
+    max-width: 40px;
+    word-break: break-all;
+}
+
+td.price,
+th.price {
+    width: 40px;
+    max-width: 40px;
+    word-break: break-all;
+}
+
+.centered {
+    text-align: center;
+    align-content: center;
+}
+
+.ticket {
+    width: 200px;
+    max-width: 200px;
+}
+
+
+
+@media print {
+    .hidden-print,
+    .hidden-print * {
+        display: none !important;
+    }
+}*/

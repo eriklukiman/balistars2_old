@@ -1,0 +1,20 @@
+    .container{
+      /*border: 1px solid black;*/
+      width: 210mm;
+      margin-top: 0px;
+      margin-left: 0px;
+    }
+
+    td{
+      font-size: 12px;
+    }
+    th{
+      font-size: 13px;
+      text-align: center;
+    }
+
+    @media print {
+      html, body {
+        width: 210mm;
+      }
+    }

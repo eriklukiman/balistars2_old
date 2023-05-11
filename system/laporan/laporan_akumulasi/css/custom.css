@@ -1,0 +1,24 @@
+.labelError {
+  color: red;
+  display: none;
+}
+
+.borderMerah {
+  border: solid 1px #FF0000 !important;
+}
+
+input:focus,
+.select2-container-active,
+textarea:focus {
+  border: 2px solid #f0ac4ec5 !important;
+}
+
+.table-bordered td { 
+   text-align: center;   
+   vertical-align: middle;
+}
+
+.table-bordered th { 
+   text-align: center;   
+   vertical-align: middle;
+}

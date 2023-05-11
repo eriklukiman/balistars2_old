@@ -1,0 +1,21 @@
+.labelError {
+  color: red;
+  display: none;
+}
+
+.borderMerah {
+  border: solid 1px #FF0000 !important;
+}
+
+input:focus,
+.select2-container-active,
+textarea:focus {
+  border: 2px solid #f0ac4ec5 !important;
+}
+
+@media screen and (max-width: 550px) {        
+  .table{
+      font-size:10.3px;
+      width:200px;
+  }
+}
