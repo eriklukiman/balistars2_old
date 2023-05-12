@@ -42,7 +42,7 @@ if (!$dataCekUser) {
 extract($_REQUEST);
 
 if ($flag == 'cancel') {
-  $sql = $db->prepare('UPDATE balistars_penyesuaian set statusPenyesuaian = ?, idUserEdit=? where idPenyesuaian = ?');
+  $sql = $db->prepare('DELETE FROM balistars_penyesuaian WHERE idPenyesuaian = ?');
   $hasil = $sql->execute(['Non Aktif', $idUserAsli, $idPenyesuaian]);
   //var_dump($sql->errorInfo());
 } else if ($flag == 'update') {
@@ -55,6 +55,7 @@ if ($flag == 'cancel') {
     nominal=?,
     idCabang=?,
     keterangan=?,
+    includeLabaRugiKotor=?,
     idUserEdit         =?
     where idPenyesuaian = ?');
   $hasil = $sql->execute([
@@ -65,6 +66,7 @@ if ($flag == 'cancel') {
     $nominal,
     $idCabang,
     $keterangan,
+    $includeLabaRugiKotor,
     $idUserAsli,
     $idPenyesuaian
   ]);
@@ -78,6 +80,7 @@ if ($flag == 'cancel') {
     nominal=?,
     idCabang=?,
     keterangan=?,
+    includeLabaRugiKotor=?,
     idUser =?');
   $hasil = $sql->execute([
     $jenisPenyesuaian,
@@ -87,6 +90,7 @@ if ($flag == 'cancel') {
     $nominal,
     $idCabang,
     $keterangan,
+    $includeLabaRugiKotor,
     $idUserAsli
   ]);
 }
