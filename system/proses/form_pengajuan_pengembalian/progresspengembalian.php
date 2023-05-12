@@ -71,7 +71,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                     balistars_penyetujuan.hasil,
                     balistars_penyetujuan.timeStamp,
                     \'\' as tambahan,
-                    FLOOR(TIME_TO_SEC(lamaWaktu) / 60) as menit,
+                    balistars_penyetujuan.menit,
                     balistars_user.userName,
                     balistars_pegawai.namaPegawai
                 FROM 
@@ -82,7 +82,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                     balistars_penyetujuan.idPengajuan = ? 
                     AND balistars_penyetujuan.jenisPengajuan = ? 
                     AND balistars_penyetujuan.statusPenyetujuan = ?
-                    ORDER BY balistars_penyetujuan.idPenyetujuan
+                    ORDER BY balistars_penyetujuan.idPenyetujuan 
             )
             UNION ALL
             (
@@ -93,7 +93,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                     \'Disetujui\' as hasil, 
                     balistars_payment.timeStamp,
                     balistars_payment.tanggal as tambahan,
-                    FLOOR(TIME_TO_SEC(lamaWaktu) / 60) as menit,
+                    balistars_payment.menit,
                     balistars_user.userName,
                     balistars_pegawai.namaPegawai 
                 FROM 
@@ -106,57 +106,105 @@ if (!$dataCekUser || !$dataCekMenu) {
                     AND balistars_payment.statusPayment = ?
             )
         ) data_progress
+
         ',
         [$idPengembalian, 'Pengembalian', 'Aktif', $idPengembalian, 'Pengembalian', 'Aktif']
     );
 
-    $arrayKey = array_column($dataFeedback, 'tahapan') ?? [];
-    $arrayValue = array_column($dataFeedback, 'hasil') ?? [];
-
-    $dataProgress = array_combine($arrayKey, $arrayValue);
-
-    $tahapan = $dataUpdate['tahapan'];
-
-    $listTahapan = [
-        'Kontrol Area' => ['secondary', 'secondary', 'secondary', 'secondary'],
-        'Pak Swi' => ['success', 'secondary', 'secondary', 'secondary'],
-        'Headoffice' => ['success', 'success', 'secondary', 'secondary'],
-        'Payment' => ['success', 'success', 'success', 'secondary'],
-        'Final' => ['success', 'success', 'success', 'success'],
-        'Reject Dari Headoffice' => ['success', 'secondary', 'secondary', 'secondary'],
-        'Reject' => ['dark', 'dark', 'dark', 'dark'],
-    ];
-
-    $listProgress = $listTahapan[$tahapan];
+    $listTahapan = ['Kontrol Area', 'Pak Swi', 'Headoffice', 'Payment'];
 ?>
-    <div class="progress">
-        <?php
-        foreach ($listProgress as $progress) {
-        ?>
-            <div class="progress-bar progress-bar-striped progress-bar-animated bg-<?= $progress ?>" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-        <?php
-        }
-        ?>
-    </div>
 
-    <div class="d-flex" style="width:100%; height:50px; padding-top:5px">
-        <div class="text-25" style="width:25%;  text-align:center">
-            <strong>KONTROL AREA</strong>
-        </div>
-        <div class="text-50" style="width:25%;  text-align:center">
-            <strong>PAK SWI</strong>
-        </div>
-        <div class="text-75" style="width:25%; text-align:center">
-            <strong>HEADOFFICE</strong>
-        </div>
-        <div class="text-100" style="width:25%; text-align:center">
-            <strong>PAYMENT</strong>
+    <div class="row mt-2">
+        <div class="col-md-12">
+            <div class="timeline-steps ">
+                <?php
+                $isReject = false;
+                $prevProgress = '';
+
+                foreach ($listTahapan as $index => $tahapan) {
+
+                    if ($isReject) {
+                        $progress = 'dark';
+
+                        $lineAfter = $progress;
+                        $lineBefore = $progress;
+                    } else {
+                        if ($tahapan === 'Payment') {
+                            $cekPayment = selectStatement(
+                                $db,
+                                'SELECT * FROM balistars_payment WHERE idPengajuan = ? AND jenisPengajuan = ? AND statusPayment = ?',
+                                [$idPengembalian, 'Pengembalian', 'Aktif'],
+                                'fetch'
+                            );
+
+                            if ($cekPayment) {
+                                $progress = 'success';
+                            } else {
+                                $progress = 'secondary';
+                            }
+
+                            $lineAfter = $progress;
+                            $lineBefore = $prevProgress;
+                        } else {
+                            $cekHasil = selectStatement(
+                                $db,
+                                'SELECT hasil FROM balistars_penyetujuan WHERE idPengajuan = ? AND jenisPengajuan = ? AND attempt = ? AND statusPenyetujuan = ? AND tahapan = ? ORDER BY idPenyetujuan DESC LIMIT 1',
+                                [$idPengembalian, 'Pengembalian', $dataUpdate['attempt'], 'Aktif', $tahapan],
+                                'fetch'
+                            )['hasil'];
+
+                            if ($cekHasil) {
+                                if ($cekHasil === 'Disetujui') {
+                                    $progress = 'success';
+
+                                    $lineAfter = $progress;
+                                    $lineBefore = $prevProgress;
+                                } else if ($cekHasil === 'Reject') {
+                                    $progress = 'danger';
+                                    $isReject = true;
+
+                                    $lineAfter = 'dark';
+                                    $lineBefore = $prevProgress;
+                                }
+                            } else {
+                                $progress = 'secondary';
+
+                                $lineAfter = $progress;
+                                $lineBefore = $prevProgress;
+                            }
+                        }
+                    }
+
+
+                    if ($index === 0) {
+                        $timelineStyle = "--timeline-dot:var(--{$progress}); --timeline-line-after:var(--{$lineAfter})";
+                    } else if ($index === count($listTahapan) - 1) {
+                        $timelineStyle = "--timeline-dot:var(--{$progress}); --timeline-line-before:var(--{$lineBefore})";
+                    } else {
+                        $timelineStyle = "--timeline-dot:var(--{$progress}); --timeline-line-before:var(--{$lineBefore}); --timeline-line-after:var(--{$lineAfter})";
+                    }
+
+                    $prevProgress = $progress;
+                ?>
+                    <div class="timeline-step" style="<?= $timelineStyle ?>">
+                        <div class="timeline-content" data-original-title="<?= $tahapan ?>">
+                            <div class="inner-circle"></div>
+                            <p class="h6 mt-3 mb-1 text-uppercase"><?= $tahapan; ?></p>
+                        </div>
+                    </div>
+                <?php
+                }
+                ?>
+            </div>
         </div>
     </div>
     <div class="row">
         <div class="col-md-12">
 
             <?php
+
+            $tahapan = $dataUpdate['tahapan'];
+
             switch ($tahapan) {
                 case 'Kontrol Area':
                 case 'Pak Swi':
@@ -196,7 +244,6 @@ if (!$dataCekUser || !$dataCekMenu) {
                     break;
 
                 case 'Reject':
-                case 'Reject Dari Headoffice':
                 ?>
                     <div class="alert alert-secondary" role="alert">
                         <i class="fas fa-info-circle pr-4"></i><strong class="text-uppercase">PENGEMBALIAN TELAH DI <?= $tahapan; ?></strong>
@@ -221,9 +268,8 @@ if (!$dataCekUser || !$dataCekMenu) {
     ];
 
     foreach ($dataFeedback as $index => $value) {
-        [$date, $time] = explode(' ', $value['timeStamp']);
+        [$date, $time] = explode(' ', getTimestamp('LOCALE', $value['timeStamp'])->format('Y-m-d H:i:s'));
         $strDate = ubahTanggalIndo($date);
-
 
         $poin = poinPengajuan($value['tahapan'], timeInMinutes($value['lamaWaktu']));
     ?>
