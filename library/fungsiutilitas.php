@@ -122,7 +122,7 @@ function poinPengajuan(string $tahapan, int $minutes)
     }
 }
 
-function statusAveragePoin(int $average)
+function statusAveragePoin(float $average)
 {
     if ($average <= 60) {
         return 'danger';

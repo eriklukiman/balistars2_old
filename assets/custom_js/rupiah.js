@@ -93,7 +93,20 @@ function formatToFloat(value) {
     return value;
 }
 
-function ubahToRp(value) {
+function ubahToRp(id) {
+    let deposit = $(id).val();
+    if (deposit == "-" || deposit == "") {
+    } else {
+        deposit = accounting.unformat(deposit, ",");
+        deposit = accounting.formatNumber(deposit, {
+            thousand: ".",
+            decimal: ",",
+        });
+    }
+    $(id).val(deposit);
+}
+
+function ubahToRupiah(value) {
     // console.log(value, /[,]/g.test(value));
     if (/[\.]/g.test(value)) {
         const [nominal, decimal] = String(value).split(".");
