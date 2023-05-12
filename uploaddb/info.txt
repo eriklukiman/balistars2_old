@@ -1,0 +1,21 @@
+-- PERUBAHAN MENU PENGAJUAN
+
+1. DROP SEMUA TABEL PENGAJUAN
+DROP TABLE `balistars_data_surat_pengajuan`, `balistars_payment`, `balistars_pengajuan_additional`, `balistars_pengajuan_partisi`, `balistars_pengajuan_pengembalian`, `balistars_pengajuan_petty_cash`, `balistars_penyetujuan`;
+
+2. IMPORT SEMUA TABEL PENGAJUAN
+(import file menu_pengajuan.sql)
+
+-- PERUBAHAN MENU PENYESUAIAN
+
+1. TAMBAH KOLOM 'includeLabaRugiKotor' DI TABEL balistars_penyesuaian
+ALTER TABLE `balistars_penyesuaian` ADD `includeLabaRugiKotor` VARCHAR(20) NOT NULL AFTER `keterangan`;
+
+2. EKSEKUSI SCRIPT SQL DIBAWAH UNTUK MEMBERI NILAI DEFAULT 'includeLabaRugiKotor' SESUAI JENIS
+UPDATE balistars_penyesuaian SET includeLabaRugiKotor = 'Ya' WHERE jenisPenyesuaian IN ('Pembelian', 'Penjualan');
+UPDATE balistars_penyesuaian SET includeLabaRugiKotor = 'Tidak' WHERE jenisPenyesuaian IN ('Biaya', 'Uang Masuk');
+
+-- PERUBAHAN MENU PEGAWAI
+
+1. MENAMBAH KOLOM 'email' DI TABEL balistars_pegawai
+ALTER TABLE `balistars_pegawai` ADD `email` VARCHAR(255) NOT NULL DEFAULT '' AFTER `NIK`;
