@@ -178,7 +178,7 @@ if (!$dataCekUser || !$dataCekMenu) {
             </div>
 
             <div id="modalProgressPettyCash" class="modal fade" role="dialog">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-dialog modal-dialog-centered " style="max-width: 70%;">
                     <div class="modal-content">
                         <div class="modal-header">
                             <div class="col-sm-11">

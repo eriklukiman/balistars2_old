@@ -73,7 +73,7 @@ if (!$dataCekUser || !$dataCekMenu) {
         if ($tahapan === 'Headoffice' || $tahapan === 'Reject') {
         ?>
             <div class="row">
-                <div class="col-md-4 form-group">
+                <div class="col-md-3 form-group">
                     <label for="tglPengajuan">TGL PENGAJUAN</label>
                     <div class="input-group date" data-date-autoclose="true" data-provide="datepicker" data-date-format="dd-mm-yyyy">
                         <input type="text" class="form-control form-control-lg" name="tglPengajuan" id="tglPengajuan" value="<?= isset($dataUpdate['tglPengajuan']) ? konversiTanggal($dataUpdate['tglPengajuan']) : date('d-m-Y') ?>" autocomplete="off">
@@ -84,35 +84,39 @@ if (!$dataCekUser || !$dataCekMenu) {
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 form-group">
+                <div class="col-md-3 form-group">
                     <label for="namaProyek">NAMA PROYEK</label>
                     <input type="text" class="form-control form-control-lg" name="namaProyek" id="namaProyek" placeholder="Nama Proyek" value="<?= $dataUpdate['namaProyek'] ?? '' ?>">
                 </div>
-                <div class="col-md-4 form-group">
+                <div class="col-md-3 form-group">
                     <label for="namaPerusahaan">NAMA PERUSAHAAN</label>
                     <input type="text" class="form-control form-control-lg" name="namaPerusahaan" id="namaPerusahaan" placeholder="Nama Perusahaan" value="<?= $dataUpdate['namaPerusahaan'] ?? '' ?>">
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-md-4 form-group">
-                    <label for="estimasiOmset">ESTIMASI OMSET</label>
-                    <input type="text" class="form-control form-control-lg" name="estimasiOmset" id="estimasiOmset" placeholder="Estimasi Omset" onkeyup="rupiah('#estimasiOmset')" value="<?= isset($dataUpdate['estimasiOmset']) ? ubahToRp($dataUpdate['estimasiOmset']) : '' ?>">
-                </div>
-                <div class="col-md-4 form-group">
-                    <label for="estimasiBiayaPengeluaran">ESTIMIASI BIAYA YANG DIKELUARKAN</label>
-                    <input type="text" class="form-control form-control-lg" name="estimasiBiayaPengeluaran" id="estimasiBiayaPengeluaran" onkeyup="rupiah('#estimasiBiayaPengeluaran')" placeholder="Estimasi Biaya Pengeluaran" value="<?= isset($dataUpdate['estimasiBiayaPengeluaran']) ? ubahToRp($dataUpdate['estimasiBiayaPengeluaran']) : '' ?>">
-                </div>
-                <div class="col-md-4 form-group">
-                    <label for="nominal">REQUEST PETTY CASH</label>
-                    <input type="text" class="form-control form-control-lg" name="nominal" id="nominal" onkeyup="rupiah('#nominal')" placeholder="Nominal Petty Cash" value="<?= isset($dataUpdate['nominal']) ? ubahToRp($dataUpdate['nominal']) : '' ?>">
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-4 form-group">
+                <div class="col-md-3 form-group">
                     <label for="noPO">NO. PO (ISI JIKA ADA)</label>
                     <input type="text" class="form-control form-control-lg" name="noPO" id="noPO" placeholder="No. PO" value="<?= $dataUpdate['noPO'] ?? '' ?>">
                 </div>
-                <div class="col-md-8 form-group">
+            </div>
+            <div class="row">
+                <div class="col-md-3 form-group">
+                    <label for="estimasiOmset">ESTIMASI OMSET</label>
+                    <input type="text" class="form-control form-control-lg" name="estimasiOmset" id="estimasiOmset" placeholder="Estimasi Omset" onkeyup="rupiah('#estimasiOmset')" value="<?= isset($dataUpdate['estimasiOmset']) ? ubahToRp($dataUpdate['estimasiOmset']) : '' ?>">
+                </div>
+                <div class="col-md-3 form-group">
+                    <label for="estimasiBiayaPengeluaran">TOTAL ESTIMASI BIAYA</label>
+                    <input type="text" class="form-control form-control-lg" name="estimasiBiayaPengeluaran" id="estimasiBiayaPengeluaran" onkeyup="rupiah('#estimasiBiayaPengeluaran')" placeholder="Estimasi Biaya Pengeluaran" value="<?= isset($dataUpdate['estimasiBiayaPengeluaran']) ? ubahToRp($dataUpdate['estimasiBiayaPengeluaran']) : '' ?>">
+                </div>
+                <div class="col-md-3 form-group">
+                    <label for="nominal">REQUEST PETTY CASH</label>
+                    <input type="text" class="form-control form-control-lg" name="nominal" id="nominal" onkeyup="rupiah('#nominal')" placeholder="Nominal Petty Cash" value="<?= isset($dataUpdate['nominal']) ? ubahToRp($dataUpdate['nominal']) : '' ?>">
+                </div>
+                <div class="col-md-3 form-group">
+                    <label for="biayaEksternal">BIAYA EKSTERNAL</label>
+                    <input type="text" class="form-control form-control-lg" name="biayaEksternal" id="biayaEksternal" onkeyup="rupiah('#biayaEksternal')" placeholder="Biaya Eksternal" value="<?= isset($dataUpdate['nominal']) ? ubahToRp($dataUpdate['biayaEksternal']) : '' ?>">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 form-group">
                     <label for="keterangan">KETERANGAN / ISI NAMA BAHAN</label>
                     <input type="text" class="form-control form-control-lg" name="keterangan" id="keterangan" placeholder="Keterangan" value="<?= $dataUpdate['keterangan'] ?? '' ?>">
                 </div>
@@ -121,41 +125,45 @@ if (!$dataCekUser || !$dataCekMenu) {
         } else {
         ?>
             <div class="row">
-                <div class="col-md-4 form-group">
+                <div class="col-md-3 form-group">
                     <label for="tglPengajuan">TGL PENGAJUAN</label>
                     <input type="text" class="form-control form-control-lg" id="tglPengajuan" value="<?= ubahTanggalIndo($dataUpdate['tglPengajuan']) ?>" disabled>
                 </div>
-                <div class="col-md-4 form-group">
+                <div class="col-md-3 form-group">
                     <label for="namaProyek">NAMA PROYEK</label>
                     <input type="text" class="form-control form-control-lg" id="namaProyek" placeholder="Nama Proyek" value="<?= $dataUpdate['namaProyek'] ?>" disabled>
                 </div>
-                <div class="col-md-4 form-group">
+                <div class="col-md-3 form-group">
                     <label for="namaPerusahaan">NAMA PERUSAHAAN</label>
                     <input type="text" class="form-control form-control-lg" id="namaPerusahaan" placeholder="Nama Perusahaan" value="<?= $dataUpdate['namaPerusahaan'] ?>" disabled>
                 </div>
+                <div class="col-md-3 form-group">
+                    <label for="noPO">NO. PO (ISI JIKA ADA)</label>
+                    <input type="text" class="form-control form-control-lg" id="noPO" placeholder="Nominal Petty Cash" value="<?= $dataUpdate['noPO'] ?>" disabled>
+                </div>
             </div>
             <div class="row">
-                <div class="col-md-4 form-group">
+                <div class="col-md-3 form-group">
                     <label for="estimasiOmset">ESTIMASI OMSET</label>
                     <input type="text" class="form-control form-control-lg" id="estimasiOmset" placeholder="Estimasi Omset" value="<?= ubahToRp($dataUpdate['estimasiOmset']) ?>" disabled>
                 </div>
-                <div class="col-md-4 form-group">
-                    <label for="estimasiBiayaPengeluaran">ESTIMIASI BIAYA YANG DIKELUARKAN</label>
+                <div class="col-md-3 form-group">
+                    <label for="estimasiBiayaPengeluaran">TOTAL ESTIMASI BIAYA</label>
                     <input type="text" class="form-control form-control-lg" id="estimasiBiayaPengeluaran" placeholder="Estimasi Biaya Pengeluaran" value="<?= ubahToRp($dataUpdate['estimasiBiayaPengeluaran']) ?>" disabled>
                 </div>
-                <div class="col-md-4 form-group">
+                <div class="col-md-3 form-group">
                     <label for="nominal">REQUEST PETTY CASH</label>
-                    <input type="text" class="form-control form-control-lg" id="nominal" placeholder="Nominal Petty Cash" value="<?= ubahToRp($dataUpdate['nominal']) ?>">
+                    <input type="text" class="form-control form-control-lg" id="nominal" placeholder="Nominal Petty Cash" value="<?= ubahToRp($dataUpdate['nominal']) ?>" disabled>
+                </div>
+                <div class="col-md-3 form-group">
+                    <label for="biayaEksternal">BIAYA EKSTERNAL</label>
+                    <input type="text" class="form-control form-control-lg" id="biayaEksternal" placeholder="Biaya Eksternal" value="<?= ubahToRp($dataUpdate['biayaEksternal']) ?>" disabled>
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-4 form-group">
-                    <label for="noPO">NO. PO (ISI JIKA ADA)</label>
-                    <input type="text" class="form-control form-control-lg" id="noPO" placeholder="Nominal Petty Cash" value="<?= $dataUpdate['noPO'] ?>">
-                </div>
-                <div class="col-md-8 form-group">
+                <div class="col-md-12 form-group">
                     <label for="keterangan">KETERANGAN / ISI NAMA BAHAN</label>
-                    <input type="text" class="form-control form-control-lg" id="keterangan" placeholder="Keterangan" value="<?= $dataUpdate['keterangan'] ?>">
+                    <input type="text" class="form-control form-control-lg" id="keterangan" placeholder="Keterangan" value="<?= $dataUpdate['keterangan'] ?>" disabled>
                 </div>
             </div>
         <?php
@@ -188,7 +196,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                 $tahapanReject = selectStatement(
                     $db,
                     'SELECT tahapan FROM balistars_penyetujuan WHERE idPengajuan = ? AND jenisPengajuan = ? AND statusPenyetujuan = ? AND hasil = ? ORDER BY idPenyetujuan DESC LIMIT 1',
-                    [$idPengembalian, 'Pengembalian', 'Aktif', 'Reject'],
+                    [$idPettyCash, 'Petty Cash', 'Aktif', 'Reject'],
                     'fetch'
                 )['tahapan'];
             ?>
@@ -214,7 +222,7 @@ if (!$dataCekUser || !$dataCekMenu) {
     <div class="row">
         <div class="col-md-12">
             <?php
-            if ($tahapan === 'Headoffice' || $tahapan === 'Reject') {
+            if ($tahapan === 'Headoffice') {
 
                 if ($flag === 'tambah') {
             ?>
@@ -228,8 +236,14 @@ if (!$dataCekUser || !$dataCekMenu) {
                     <button type="button" class="btn btn-primary" onclick="prosesPettyCash($(this))">
                         <i class="fas fa-save pr-3"></i><strong>UPDATE</strong>
                     </button>
-            <?php
+                <?php
                 }
+            } else if ($tahapan === 'Reject') {
+                ?>
+                <button type="button" class="btn btn-success" onclick="prosesPettyCash($(this), true);pengajuanUlang($(this), '<?= $idPettyCash ?>')">
+                    <i class="fas fa-upload pr-3"></i><strong>AJUKAN ULANG</strong>
+                </button>
+            <?php
             }
             ?>
         </div>

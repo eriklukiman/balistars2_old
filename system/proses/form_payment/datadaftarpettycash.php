@@ -61,6 +61,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                 <th class="text-center">ESTIMASI OMSET</th>
                 <th class="text-center">ESTIMASI PENGELUARAN</th>
                 <th class="text-center">NILAI PETTY CASH</th>
+                <th class="text-center">BIAYA EKSTERNAL</th>
                 <th class="text-center">NO. PO</th>
                 <th class="text-center">KET</th>
             </tr>
@@ -139,6 +140,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                             <td class="text-right">Rp <?= ubahToRp($row['estimasiOmset']) ?></td>
                             <td class="text-right">Rp <?= ubahToRp($row['estimasiBiayaPengeluaran']) ?></td>
                             <td class="text-right">Rp <?= ubahToRp($row['nominal']) ?></td>
+                            <td class="text-right">Rp <?= ubahToRp($row['biayaEksternal']) ?></td>
                             <td class="text-right"><?= $row['noPO'] ?></td>
                             <td class="text-right"><?= wordwrap($row['keterangan'], 25, '<br/>') ?></td>
                         </tr>

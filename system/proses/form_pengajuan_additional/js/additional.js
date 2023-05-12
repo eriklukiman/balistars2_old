@@ -14,6 +14,8 @@ $(function () {
             $(this).addClass("border-warning");
         }
     });
+
+    $(document).on("keyup", "#omset, #biaya", getProfitRatio);
 });
 
 function dataDaftarAdditional() {
@@ -167,7 +169,14 @@ function prosesAdditional(btn, statusPengajuanUlang = false) {
             contentType: false,
             data: dataForm,
             dataType: "json",
+            beforeSend: function () {
+                if (dataForm.get("flag") === "tambah") {
+                    $(".overlay").show();
+                }
+            },
             success: function (data) {
+                $(".overlay").hide();
+
                 const { status, pesan } = data;
 
                 notifikasi(status, pesan);
@@ -184,6 +193,22 @@ function prosesAdditional(btn, statusPengajuanUlang = false) {
     } else {
         notifikasi(false, "Proses Gagal, Form Belum Terisi Dengan Lengkap");
         btn.removeAttr("disabled");
+    }
+}
+
+function getProfitRatio() {
+    let omset = $("#omset").val();
+    let biaya = $("#biaya").val();
+
+    if (omset !== "" && biaya !== "") {
+        omset = ubahToInt(omset);
+        biaya = ubahToInt(biaya);
+
+        const profit = omset - biaya;
+        const ratio = Number((profit / omset) * 100).toFixed(2);
+
+        $("#profit").val(ubahToRupiah(profit));
+        $("#ratio").val(ratio);
     }
 }
 

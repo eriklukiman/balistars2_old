@@ -49,9 +49,6 @@ if (!$dataCekUser || !$dataCekMenu) {
 
     extract($_POST);
 
-    $idJabatan = intval($dataLogin['idJabatan']);
-    $idPegawai = intval($dataLogin['idPegawai']);
-
     $tahapan = ['Headoffice'];
 
     $dataCabang = selectStatement(
@@ -69,7 +66,7 @@ if (!$dataCekUser || !$dataCekMenu) {
             <tr>
                 <th class="text-center">NO</th>
                 <th class="text-center">AKSI</th>
-                <th class="text-center">CUSTOMER</th>
+                <th class="text-center">PROJECT</th>
                 <th class="text-center">TGL</th>
                 <th class="text-center">BIAYA</th>
                 <th class="text-center">OMSET</th>
@@ -104,50 +101,18 @@ if (!$dataCekUser || !$dataCekMenu) {
                     $tanggalAwal = konversiTanggal($tanggal[0]);
                     $tanggalAkhir = konversiTanggal($tanggal[1]);
 
-                    switch ($status) {
-                        case 'Belum Diproses':
-                            $parameter['status'] = 'AND data_penyetujuan.idPenyetujuan IS NULL';
-                            break;
-                        case 'Sudah Diproses':
-                            $parameter['status'] = 'AND data_penyetujuan.idPenyetujuan IS NOT NULL';
-                            break;
-                        case 'Reject':
-                            $parameter['status'] = 'AND data_penyetujuan.idPenyetujuan IS NOT NULL AND data_penyetujuan.hasil = \'Reject\'';
-                            break;
-
-                        default:
-                            $parameter['status'] = '';
-                            break;
-                    }
-
                     $dataAdditional = selectStatement(
                         $db,
                         "SELECT 
                             balistars_pengajuan_additional.*
                         FROM 
                             balistars_pengajuan_additional
-                            LEFT JOIN (
-                                SELECT
-                                    *
-                                FROM
-                                    balistars_penyetujuan
-                                WHERE
-                                    jenisPengajuan = ?
-                                    AND statusPenyetujuan = ?
-                                    AND idUserPenyetuju = ?
-                                    AND tahapan IN ({$questionMarkTahapan})
-                            ) data_penyetujuan ON balistars_pengajuan_additional.idAdditional = data_penyetujuan.idPengajuan
                         WHERE 
                             balistars_pengajuan_additional.statusAdditional = ?
-                            {$parameter['status']}
                             AND (balistars_pengajuan_additional.tglPengajuan BETWEEN ? AND ?)
                             {$parameter['cabang']}
                     ",
                         array_merge(
-                            [
-                                'Additional', 'Aktif', $idUserAsli,
-                            ],
-                            $tahapan,
                             [
                                 'Aktif',  $tanggalAwal, $tanggalAkhir
                             ],
@@ -155,85 +120,138 @@ if (!$dataCekUser || !$dataCekMenu) {
                         )
                     );
 
-                    if (count($dataAdditional) === 0) {
+                    $n = 1;
+
+                    $isDataDisplayed = false;
+
+                    foreach ($dataAdditional as $row) {
+                        $skip = false;
+
+                        switch ($status) {
+                            case 'Belum Diproses':
+                                if ($row['tahapan'] === 'Headoffice') {
+                                    $skip = false;
+                                } else {
+                                    $skip = true;
+                                }
+                                break;
+                            case 'Disetujui':
+                                $cekHasil = selectStatement(
+                                    $db,
+                                    'SELECT * FROM balistars_penyetujuan WHERE idPengajuan = ? AND jenisPengajuan = ? AND statusPenyetujuan = ? AND tahapan = ? ORDER BY idPenyetujuan DESC LIMIT 1',
+                                    [$row['idAdditional'], $jenisPengajuan, 'Aktif', 'Headoffice'],
+                                    'fetch'
+                                )['hasil'];
+
+
+                                if ($cekHasil === 'Disetujui') {
+                                    $skip = false;
+                                } else {
+                                    $skip = true;
+                                }
+
+                                break;
+                            case 'Reject':
+                                $cekHasil = selectStatement(
+                                    $db,
+                                    'SELECT * FROM balistars_penyetujuan WHERE idPengajuan = ? AND jenisPengajuan = ? AND statusPenyetujuan = ? AND tahapan = ? ORDER BY idPenyetujuan DESC LIMIT 1',
+                                    [$row['idAdditional'], $jenisPengajuan, 'Aktif', 'Headoffice'],
+                                    'fetch'
+                                )['hasil'];
+
+                                if ($cekHasil === 'Reject') {
+                                    $skip = false;
+                                } else {
+                                    $skip = true;
+                                }
+
+                                break;
+
+                            default:
+                                $skip = false;
+                                break;
+                        }
+
+
+                        if ($skip) continue;
+
+                        $isDataDisplayed = true || $isDataDisplayed;
                 ?>
+                        <tr>
+                            <td class="text-center"><?= $n ?></td>
+                            <td class="text-center" class="align-middle">
+                                <button type="button" class="btn btn-info" onclick="getFormPenyetujuan('<?= $jenisPengajuan ?>','<?= $row['idAdditional'] ?>')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <?php
+                                if (in_array('Pak Swi', $tahapan)) {
+                                ?>
+                                    <button type="button" class="btn btn-success" onclick="prosesPenyetujuan($(this),'<?= $jenisPengajuan ?>', '<?= $row['idAdditional'] ?>', 'Disetujui')">
+                                        <i class="fas fa-check-circle"></i>
+                                    </button>
+                                <?php
+                                }
+                                ?>
+                            </td>
+                            <td class="text-center"><?= $row['namaCustomer'] ?></td>
+                            <td class="text-center"><?= ubahTanggalIndo($row['tglPengajuan']) ?></td>
+                            <td class="text-right">Rp <?= ubahToRp($row['biaya']) ?></td>
+                            <td class="text-right">Rp <?= ubahToRp($row['omset']) ?></td>
+                            <td class="text-right">Rp <?= ubahToRp($row['profit']) ?></td>
+                            <td class="text-right"><?= cekDesimal($row['ratio']) ?>%</td>
+                            <td class="text-center">
+                                <?php
+                                $dataFeedback = selectStatement(
+                                    $db,
+                                    "SELECT
+                                        tahapan,
+                                        lamaWaktu
+                                    FROM
+                                        balistars_penyetujuan
+                                    WHERE
+                                        idPengajuan = ?
+                                        AND jenisPengajuan = ?
+                                        AND statusPenyetujuan = ?
+                                        AND tahapan IN ({$questionMarkTahapan})
+                                        AND idUserPenyetuju = ?
+                                    ",
+                                    array_merge([
+                                        $row['idAdditional'],
+                                        'Additional',
+                                        'Aktif',
+                                    ], $tahapan, [$idUserAsli])
+                                );
+
+                                if (count($dataFeedback) === 0) {
+                                    $status = 'info';
+                                } else {
+                                    $poin = array_map(function ($tahapan, $lamaWaktu) {
+                                        if (in_array($tahapan, ['Kontrol Area', 'Headoffice', 'Payment'])) {
+                                            return poinPengajuan($tahapan, timeInMinutes($lamaWaktu));
+                                        }
+                                    }, array_column($dataFeedback, 'tahapan'), array_column($dataFeedback, 'lamaWaktu'));
+
+                                    $poin = array_filter($poin, function ($nilai) {
+                                        return !is_null($nilai);
+                                    });
+
+                                    $average = array_sum($poin) / count($poin);
+                                    $status = statusAveragePoin($average);
+                                }
+
+                                ?>
+                                <button type="button" class="btn btn-<?= $status ?>" onclick="showProgressPenyetujuan('<?= $jenisPengajuan ?>','<?= $row['idAdditional'] ?>')"><strong>CEK STATUS</strong></button>
+                            </td>
+                        </tr>
+                    <?php
+                        $n++;
+                    }
+                    if ($isDataDisplayed === false) {
+                    ?>
                         <tr>
                             <td class="text-center table-active" colspan="9"><i class="fas fa-info-circle pr-4"></i><strong>DATA TIDAK DITEMUKAN</strong></td>
                         </tr>
-                        <?php
-                    } else {
-                        $n = 1;
-                        foreach ($dataAdditional as $row) {
-                        ?>
-                            <tr>
-                                <td class="text-center"><?= $n ?></td>
-                                <td class="text-center" class="align-middle">
-                                    <button type="button" class="btn btn-info" onclick="getFormPenyetujuan('<?= $jenisPengajuan ?>','<?= $row['idAdditional'] ?>')">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <?php
-                                    if (in_array('Pak Swi', $tahapan)) {
-                                    ?>
-                                        <button type="button" class="btn btn-success" onclick="prosesPenyetujuan($(this),'<?= $jenisPengajuan ?>', '<?= $row['idAdditional'] ?>', 'Disetujui')">
-                                            <i class="fas fa-check-circle"></i>
-                                        </button>
-                                    <?php
-                                    }
-                                    ?>
-                                </td>
-                                <td class="text-center"><?= $row['namaCustomer'] ?></td>
-                                <td class="text-center"><?= ubahTanggalIndo($row['tglPengajuan']) ?></td>
-                                <td class="text-right">Rp <?= ubahToRp($row['biaya']) ?></td>
-                                <td class="text-right">Rp <?= ubahToRp($row['omset']) ?></td>
-                                <td class="text-right">Rp <?= ubahToRp($row['profit']) ?></td>
-                                <td class="text-right"><?= $row['ratio'] ?></td>
-                                <td class="text-center">
-                                    <?php
-                                    $dataFeedback = selectStatement(
-                                        $db,
-                                        "SELECT
-                                            tahapan,
-                                            lamaWaktu
-                                        FROM
-                                            balistars_penyetujuan
-                                        WHERE
-                                            idPengajuan = ?
-                                            AND jenisPengajuan = ?
-                                            AND statusPenyetujuan = ?
-                                            AND tahapan IN ({$questionMarkTahapan})
-                                            AND idUserPenyetuju = ?
-                                    ",
-                                        array_merge([
-                                            $row['idAdditional'],
-                                            'Additional',
-                                            'Aktif',
-                                        ], $tahapan, [$idUserAsli])
-                                    );
-
-                                    if (count($dataFeedback) === 0) {
-                                        $status = 'info';
-                                    } else {
-                                        $poin = array_map(function ($tahapan, $lamaWaktu) {
-                                            if (in_array($tahapan, ['Kontrol Area', 'Headoffice', 'Payment'])) {
-                                                return poinPengajuan($tahapan, timeInMinutes($lamaWaktu));
-                                            }
-                                        }, array_column($dataFeedback, 'tahapan'), array_column($dataFeedback, 'lamaWaktu'));
-
-                                        $poin = array_filter($poin, function ($nilai) {
-                                            return !is_null($nilai);
-                                        });
-
-                                        $average = array_sum($poin) / count($poin);
-                                        $status = statusAveragePoin($average);
-                                    }
-
-                                    ?>
-                                    <button type="button" class="btn btn-<?= $status ?>" onclick="showProgressPenyetujuan('<?= $jenisPengajuan ?>','<?= $row['idAdditional'] ?>')"><strong>CEK STATUS</strong></button>
-                                </td>
-                            </tr>
             <?php
-                            $n++;
-                        }
                     }
                 }
             }

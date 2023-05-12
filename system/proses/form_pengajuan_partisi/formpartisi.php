@@ -60,9 +60,24 @@ if (!$dataCekUser || !$dataCekMenu) {
     if ($dataUpdate) {
         $flag = 'update';
         $tahapan = $dataUpdate['tahapan'];
+
+        $dataPenyetujuanTerakhir = selectStatement(
+            $db,
+            'SELECT * FROM balistars_penyetujuan WHERE idPengajuan = ? AND statusPenyetujuan = ? AND jenisPengajuan = ? ORDER BY idPenyetujuan DESC LIMIT 1',
+            [$idPartisi, 'Aktif', 'Partisi'],
+            'fetch'
+        );
+
+        if ($dataPenyetujuanTerakhir['hasil'] === 'Reject' && $dataPenyetujuanTerakhir['tahapan'] === 'Headoffice') {
+            $rejectHO = true;
+        } else {
+            $rejectHO = false;
+        }
     } else {
         $flag = 'tambah';
         $tahapan = 'Kontrol Area';
+
+        $rejectHO = false;
     }
 
 ?>
@@ -70,7 +85,7 @@ if (!$dataCekUser || !$dataCekMenu) {
         <input type="hidden" name="flag" id="flag" value="<?= $flag ?>">
         <input type="hidden" name="idPartisi" id="idPartisi" value="<?= $idPartisi ?>">
         <?php
-        if ($tahapan === 'Kontrol Area' || $tahapan === 'Reject') {
+        if (($tahapan === 'Kontrol Area' && $rejectHO === false) || $tahapan === 'Reject') {
         ?>
             <div class="row">
                 <div class="col-md-3 form-group">
@@ -145,7 +160,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                     </label>
                 </div>
                 <?php
-                if ($tahapan === 'Kontrol Area' || $tahapan === 'Reject') {
+                if (($tahapan === 'Kontrol Area' && $rejectHO === false) || $tahapan === 'Reject') {
                 ?>
                     <div class="col-md-6 text-right">
                         <button type="button" class="btn btn-info" onclick="$('#formBuktiLampiran input').val('')"><strong>RESET FORM</strong></button>
@@ -158,17 +173,19 @@ if (!$dataCekUser || !$dataCekMenu) {
         <div class="card-body">
             <?php
             if ($tahapan === 'Kontrol Area') {
+                if ($rejectHO === true) {
             ?>
-                <div class="alert alert-info" role="alert">
-                    <i class="fas fa-info-circle pr-4"></i><strong class="pr-2">INFO :</strong><span>Link yang diinputkan harus mencantumkan <code>"https"</code> pada awalannya <strong>( CONTOH : "https://google.com")</strong></span>
-                </div>
-            <?php
-            } else if ($tahapan === 'Reject Dari Headoffice') {
-            ?>
-                <div class="alert alert-danger" role="alert">
-                    <i class="fas fa-info-circle pr-4"></i><strong class="pr-2">INFO :</strong><span>Pengajuan Telah Di Reject Oleh Headoffice. Pengajuan akan ditindak lanjuti oleh Kontrol Area</span>
-                </div>
-            <?php
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-info-circle pr-4"></i><strong class="pr-2">INFO :</strong><span>Pengajuan Telah Di Reject Oleh Headoffice. Pengajuan akan ditindak lanjuti oleh Kontrol Area</span>
+                    </div>
+                <?php
+                } else {
+                ?>
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle pr-4"></i><strong class="pr-2">INFO :</strong><span>Link yang diinputkan harus mencantumkan <code>"https"</code> pada awalannya <strong>( CONTOH : "https://google.com")</strong></span>
+                    </div>
+                <?php
+                }
             } else if ($tahapan === 'Reject') {
                 $tahapanReject = selectStatement(
                     $db,
@@ -176,7 +193,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                     [$idPartisi, 'Partisi', 'Aktif', 'Reject'],
                     'fetch'
                 )['tahapan'];
-            ?>
+                ?>
                 <div class="alert alert-danger" role="alert">
                     <i class="fas fa-info-circle pr-4"></i><strong class="pr-2">INFO :</strong><span>Pengajuan Telah Di Reject Oleh <?= $tahapanReject; ?></span>
                 </div>
@@ -191,7 +208,7 @@ if (!$dataCekUser || !$dataCekMenu) {
             ?>
             <form id="formBuktiLampiran">
                 <?php
-                if ($tahapan === 'Kontrol Area' || $tahapan === 'Reject') {
+                if (($tahapan === 'Kontrol Area' && $rejectHO === false) || $tahapan === 'Reject') {
                 ?>
                     <div class="row">
                         <div class="col-md-4 form-group">
@@ -345,7 +362,7 @@ if (!$dataCekUser || !$dataCekMenu) {
     <div class="row">
         <div class="col-md-12">
             <?php
-            if ($tahapan === 'Kontrol Area') {
+            if (($tahapan === 'Kontrol Area' && $rejectHO === false)) {
 
                 if ($flag === 'tambah') {
             ?>

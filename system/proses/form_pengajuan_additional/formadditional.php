@@ -60,9 +60,24 @@ if (!$dataCekUser || !$dataCekMenu) {
     if ($dataUpdate) {
         $flag = 'update';
         $tahapan = $dataUpdate['tahapan'];
+
+        $dataPenyetujuanTerakhir = selectStatement(
+            $db,
+            'SELECT * FROM balistars_penyetujuan WHERE idPengajuan = ? AND statusPenyetujuan = ? AND jenisPengajuan = ? ORDER BY idPenyetujuan DESC LIMIT 1',
+            [$idAdditional, 'Aktif', 'Additional'],
+            'fetch'
+        );
+
+        if ($dataPenyetujuanTerakhir['hasil'] === 'Reject' && $dataPenyetujuanTerakhir['tahapan'] === 'Headoffice') {
+            $rejectHO = true;
+        } else {
+            $rejectHO = false;
+        }
     } else {
         $flag = 'tambah';
         $tahapan = 'Kontrol Area';
+
+        $rejectHO = false;
     }
 
 ?>
@@ -70,7 +85,7 @@ if (!$dataCekUser || !$dataCekMenu) {
         <input type="hidden" name="flag" id="flag" value="<?= $flag ?>">
         <input type="hidden" name="idAdditional" id="idAdditional" value="<?= $idAdditional ?>">
         <?php
-        if ($tahapan === 'Kontrol Area' || $tahapan === 'Reject') {
+        if (($tahapan === 'Kontrol Area' && $rejectHO === false) || $tahapan === 'Reject') {
         ?>
             <div class="row">
                 <div class="col-md-4 form-group">
@@ -89,22 +104,29 @@ if (!$dataCekUser || !$dataCekMenu) {
                     <input type="text" class="form-control form-control-lg" name="namaCustomer" id="namaCustomer" placeholder="Nama Customer" value="<?= $dataUpdate['namaCustomer'] ?? '' ?>">
                 </div>
                 <div class="col-md-4 form-group">
-                    <label for="omset">OMSET</label>
-                    <input type="text" class="form-control form-control-lg" name="omset" id="omset" onkeyup="rupiah('#omset')" placeholder="Omset" value="<?= isset($dataUpdate['omset']) ? ubahToRp($dataUpdate['omset']) : '' ?>">
+                    <label for="biaya">BIAYA</label>
+                    <input type="text" class="form-control form-control-lg" name="biaya" id="biaya" onkeyup="rupiah('#biaya')" placeholder="Biaya" value="<?= isset($dataUpdate['biaya']) ? ubahToRp($dataUpdate['biaya']) : '' ?>">
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-4 form-group">
-                    <label for="biaya">BIAYA</label>
-                    <input type="text" class="form-control form-control-lg" name="biaya" id="biaya" onkeyup="rupiah('#biaya')" placeholder="Biaya" value="<?= isset($dataUpdate['biaya']) ? ubahToRp($dataUpdate['biaya']) : '' ?>">
+                    <label for="omset">OMSET</label>
+                    <input type="text" class="form-control form-control-lg" name="omset" id="omset" onkeyup="rupiah('#omset')" placeholder="Omset" value="<?= isset($dataUpdate['omset']) ? ubahToRp($dataUpdate['omset']) : '' ?>">
                 </div>
                 <div class="col-md-4 form-group">
-                    <label for="profit">PROFIT</label>
-                    <input type="text" class="form-control form-control-lg" name="profit" id="profit" onkeyup="rupiah('#profit')" placeholder="Profit" value="<?= isset($dataUpdate['profit']) ? ubahToRp($dataUpdate['profit']) : '' ?>">
+                    <label for="profit">MARGIN PROFIT</label>
+                    <input type="text" class="form-control form-control-lg" id="profit" readonly placeholder="Profit" value="<?= isset($dataUpdate['profit']) ? ubahToRp($dataUpdate['profit']) : '' ?>">
                 </div>
                 <div class="col-md-4 form-group">
                     <label for="ratio">RATIO</label>
-                    <input type="text" class="form-control form-control-lg" name="ratio" id="ratio" placeholder="Ratio" value="<?= $dataUpdate['ratio'] ?? '' ?>">
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-lg" id="ratio" placeholder="Ratio" value="<?= $dataUpdate['ratio'] ?? '' ?>" readonly>
+                        <div class="input-group-append">
+                            <span class="input-group-text">
+                                %
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         <?php
@@ -131,17 +153,23 @@ if (!$dataCekUser || !$dataCekMenu) {
                 </div>
                 <div class="col-md-4 form-group">
                     <label for="profit">PROFIT</label>
-                    <input type="text" class="form-control form-control-lg" disabled id="profit" onkeyup="rupiah('#profit')" placeholder="Profit" value="<?= ubahToRp($dataUpdate['profit']) ?>">
+                    <input type="text" class="form-control form-control-lg" id="profit" disabled placeholder="Profit" value="<?= ubahToRp($dataUpdate['profit']) ?>">
                 </div>
                 <div class="col-md-4 form-group">
                     <label for="ratio">RATIO</label>
-                    <input type="text" class="form-control form-control-lg" disabled id="ratio" placeholder="Ratio" value="<?= $dataUpdate['ratio'] ?>">
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-lg" id="ratio" placeholder="Ratio" value="<?= $dataUpdate['ratio'] ?>" disabled>
+                        <div class="input-group-append">
+                            <span class="input-group-text">
+                                %
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         <?php
         }
         ?>
-
     </form>
     <br />
     <div class="card">
@@ -153,7 +181,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                     </label>
                 </div>
                 <?php
-                if ($tahapan === 'Kontrol Area' || $tahapan === 'Reject') {
+                if (($tahapan === 'Kontrol Area' && $rejectHO === false) || $tahapan === 'Reject') {
                 ?>
                     <div class="col-md-6 text-right">
                         <button type="button" class="btn btn-info" onclick="$('#formBuktiLampiran input').val('')"><strong>RESET FORM</strong></button>
@@ -166,17 +194,19 @@ if (!$dataCekUser || !$dataCekMenu) {
         <div class="card-body">
             <?php
             if ($tahapan === 'Kontrol Area') {
+                if ($rejectHO === true) {
             ?>
-                <div class="alert alert-info" role="alert">
-                    <i class="fas fa-info-circle pr-4"></i><strong class="pr-2">INFO :</strong><span>Link yang diinputkan harus mencantumkan <code>"https"</code> pada awalannya <strong>( CONTOH : "https://google.com")</strong></span>
-                </div>
-            <?php
-            } else if ($tahapan === 'Reject Dari Headoffice') {
-            ?>
-                <div class="alert alert-danger" role="alert">
-                    <i class="fas fa-info-circle pr-4"></i><strong class="pr-2">INFO :</strong><span>Pengajuan Telah Di Reject Oleh Headoffice. Pengajuan akan ditindak lanjuti oleh Kontrol Area</span>
-                </div>
-            <?php
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-info-circle pr-4"></i><strong class="pr-2">INFO :</strong><span>Pengajuan Telah Di Reject Oleh Headoffice. Pengajuan akan ditindak lanjuti oleh Kontrol Area</span>
+                    </div>
+                <?php
+                } else {
+                ?>
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle pr-4"></i><strong class="pr-2">INFO :</strong><span>Link yang diinputkan harus mencantumkan <code>"https"</code> pada awalannya <strong>( CONTOH : "https://google.com")</strong></span>
+                    </div>
+                <?php
+                }
             } else if ($tahapan === 'Reject') {
                 $tahapanReject = selectStatement(
                     $db,
@@ -184,7 +214,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                     [$idAdditional, 'Additional', 'Aktif', 'Reject'],
                     'fetch'
                 )['tahapan'];
-            ?>
+                ?>
                 <div class="alert alert-danger" role="alert">
                     <i class="fas fa-info-circle pr-4"></i><strong class="pr-2">INFO :</strong><span>Pengajuan Telah Di Reject Oleh <?= $tahapanReject; ?></span>
                 </div>
@@ -199,7 +229,7 @@ if (!$dataCekUser || !$dataCekMenu) {
             ?>
             <form id="formBuktiLampiran">
                 <?php
-                if ($tahapan === 'Kontrol Area' || $tahapan === 'Reject') {
+                if (($tahapan === 'Kontrol Area' && $rejectHO === false) || $tahapan === 'Reject') {
                 ?>
                     <div class="row">
                         <div class="col-md-4 form-group">
@@ -449,7 +479,7 @@ if (!$dataCekUser || !$dataCekMenu) {
     <div class="row">
         <div class="col-md-12">
             <?php
-            if ($tahapan === 'Kontrol Area') {
+            if (($tahapan === 'Kontrol Area' && $rejectHO === false)) {
 
                 if ($flag === 'tambah') {
             ?>

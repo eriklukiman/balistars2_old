@@ -161,7 +161,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                                                 <select name="status" id="status" class="select2 form-control" onchange="dataDaftarPenyetujuan()">
                                                     <option value="">SEMUA</option>
                                                     <?php
-                                                    $opsi = ['Belum Diproses', 'Sudah Diproses', 'Reject'];
+                                                    $opsi = ['Belum Diproses', 'Disetujui', 'Reject'];
 
                                                     foreach ($opsi as $index => $value) {
                                                     ?>
@@ -188,7 +188,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                                             </div>
                                         </div>
                                     </div>
-                                    <div id="dataDaftarPenyetujuan"></div>
+                                    <div id="dataDaftarPenyetujuan" style="overflow-x: auto;"></div>
 
                                     <!-- End Body -->
                                 </div>
@@ -206,7 +206,7 @@ if (!$dataCekUser || !$dataCekMenu) {
             </div>
 
             <div id="modalProgressPenyetujuan" class="modal fade" role="dialog">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-dialog modal-dialog-centered" style="max-width: 70%;">
                     <div class="modal-content">
                         <div class="modal-header">
                             <div class="col-sm-11">

@@ -65,22 +65,24 @@ if (!$dataCekUser || !$dataCekMenu) {
         $flag = 'tambah';
     }
 
-    $idJabatan = intval($dataLogin['idJabatan']);
-    $idPegawai = intval($dataLogin['idPegawai']);
+    $tahapan = ['Kontrol Area'];
 
-    $area = $dataLogin['area'];
-
-    $tahapan = ['Kontrol Area', 'Reject Dari Headoffice'];
-
-    $dataCabang = selectStatement(
+    $dataPenyetujuanTerakhir = selectStatement(
         $db,
-        'SELECT idCabang FROM balistars_cabang WHERE area = ?',
-        [$area],
+        'SELECT * FROM balistars_penyetujuan WHERE idPengajuan = ? AND statusPenyetujuan = ? AND jenisPengajuan = ? ORDER BY idPenyetujuan DESC LIMIT 1',
+        [$idPartisi, 'Aktif', 'Partisi'],
+        'fetch'
     );
 
-    $idCabangCakupan = array_column($dataCabang, 'idCabang');
-
-
+    if ($dataPenyetujuanTerakhir) {
+        if ($dataPenyetujuanTerakhir['hasil'] === 'Reject' && $dataPenyetujuanTerakhir['tahapan'] === 'Headoffice') {
+            $state = 'Reject Dari Headoffice';
+        } else {
+            $state = 'Pengajuan Cabang';
+        }
+    } else {
+        $state = 'Pengajuan Cabang';
+    }
 ?>
     <form id="formPartisi">
         <input type="hidden" name="flag" id="flag" value="<?= $flag ?>">
@@ -123,6 +125,15 @@ if (!$dataCekUser || !$dataCekMenu) {
             </div>
         </div>
         <div class="card-body">
+            <?php
+            if ($state === 'Reject Dari Headoffice') {
+            ?>
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-circle pr-3"></i><strong>PENGAJUAN TELAH DI REJECT OLEH HEADOFFICE, MOHON DI KONFIRMASI ULANG</strong>
+                </div>
+            <?php
+            }
+            ?>
             <form id="formBuktiLampiran">
                 <div class="row">
                     <div class="col-md-4 form-group">
@@ -207,10 +218,10 @@ if (!$dataCekUser || !$dataCekMenu) {
             <div class="col-md-4 form-group">
                 <label for="">DETAIL PENYETUJUAN</label>
                 <div class="d-flex" style="flex-direction: column; gap: 10px">
-                    <button type="button" class="w-75 btn btn-success" onclick="prosesPenyetujuan($(this), '<?= $jenisPengajuan ?>','<?= $idPengembalian ?>', 'Disetujui')">
+                    <button type="button" class="w-75 btn btn-success" onclick="prosesPenyetujuan($(this), '<?= $jenisPengajuan ?>','<?= $idPartisi ?>', 'Disetujui')">
                         <strong>DISETUJUI</strong>
                     </button>
-                    <button type="button" class="w-75 btn btn-danger" onclick="prosesPenyetujuan($(this), '<?= $jenisPengajuan ?>','<?= $idPengembalian ?>', 'Reject')">
+                    <button type="button" class="w-75 btn btn-danger" onclick="prosesPenyetujuan($(this), '<?= $jenisPengajuan ?>','<?= $idPartisi ?>', 'Reject')">
                         <strong>REJECT</strong>
                     </button>
                 </div>

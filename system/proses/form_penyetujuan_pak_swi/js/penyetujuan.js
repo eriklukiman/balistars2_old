@@ -135,7 +135,7 @@ function prosesPenyetujuan(btn, jenisPengajuan, idPengajuan, hasil) {
         dangerMode: true,
     }).then((willDelete) => {
         if (willDelete) {
-            const keterangan = $("#keteranganPenyetujuan").val();
+            const keterangan = $("#keteranganPenyetujuan").val() ?? "";
             $.ajax({
                 url: "prosespenyetujuan.php",
                 type: "POST",
@@ -146,7 +146,11 @@ function prosesPenyetujuan(btn, jenisPengajuan, idPengajuan, hasil) {
                     keterangan,
                 },
                 dataType: "json",
+                beforeSend: function () {
+                    $(".overlay").show();
+                },
                 success: function (data) {
+                    $(".overlay").hide();
                     const { status, pesan } = data;
 
                     notifikasi(status, pesan);

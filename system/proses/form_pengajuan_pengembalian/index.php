@@ -66,6 +66,7 @@ if (!$dataCekUser || !$dataCekMenu) {
         <link rel="stylesheet" href="<?= $BASE_URL_HTML ?>/assets/vendor/toastr/toastr.min.css">
         <link rel="stylesheet" href="<?= $BASE_URL_HTML ?>/assets/vendor/select2/select2.css">
         <link rel="stylesheet" href="<?= $BASE_URL_HTML ?>/assets/vendor/datepicker/datepicker.min.css">
+        <link rel="stylesheet" href="<?= $BASE_URL_HTML ?>/assets/vendor/horizontal-timeline/css/horizontal-timeline.css">
         <link rel="stylesheet" href="<?= $BASE_URL_HTML ?>/assets/css/main2.css">
         <link rel="stylesheet" href="<?= $BASE_URL_HTML ?>/assets/css/color_skins.css">
         <link rel="stylesheet" href="<?= $BASE_URL_HTML ?>/assets/css/loader.css">
@@ -178,7 +179,7 @@ if (!$dataCekUser || !$dataCekMenu) {
             </div>
 
             <div id="modalProgressPengembalian" class="modal fade" role="dialog">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-dialog modal-dialog-centered" style="max-width: 70%;">
                     <div class="modal-content">
                         <div class="modal-header">
                             <div class="col-sm-11">
@@ -202,6 +203,7 @@ if (!$dataCekUser || !$dataCekMenu) {
             <script src="<?= $BASE_URL_HTML ?>/assets/vendor/select2/select2.min.js"></script>
             <script src="<?= $BASE_URL_HTML ?>/assets/vendor/datepicker/datepicker.min.js"></script>
             <script src="<?= $BASE_URL_HTML ?>/assets/vendor/toastr/toastr.js"></script>
+            <script src="<?= $BASE_URL_HTML ?>/assets/vendor/horizontal-timeline/js/horizontal-timeline.js"></script>
 
             <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>

@@ -144,7 +144,11 @@ function prosesPenyetujuan(btn, jenisPengajuan, idPengajuan, hasil) {
                     keterangan,
                 },
                 dataType: "json",
+                beforeSend: function () {
+                    $(".overlay").show();
+                },
                 success: function (data) {
+                    $(".overlay").hide();
                     const { status, pesan } = data;
 
                     notifikasi(status, pesan);

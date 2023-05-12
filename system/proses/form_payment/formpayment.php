@@ -74,7 +74,7 @@ if (!$dataCekUser || !$dataCekMenu) {
             </div>
             <div class="form-group col-md-9">
                 <div class="input-group date" data-date-autoclose="true" data-provide="datepicker" data-date-format="dd-mm-yyyy">
-                    <input type="text" class="form-control form-control-lg" name="tglPayment" id="tglPayment" value="<?= isset($dataUpdate['tglPayment']) ? konversiTanggal($dataUpdate['tglPayment']) : date('d-m-Y') ?>" autocomplete="off">
+                    <input type="text" class="form-control form-control-lg" name="tglPayment" id="tglPayment" value="<?= isset($dataUpdate['tanggal']) ? konversiTanggal($dataUpdate['tanggal']) : date('d-m-Y') ?>" autocomplete="off">
                     <div class="input-group-append">
                         <button class="btn btn-outline-secondary" type="button">
                             <i class="fa fa-calendar"></i>

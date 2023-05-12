@@ -148,7 +148,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                                                 <select name="status" id="status" class="select2 form-control" onchange="dataDaftarPartisi()">
                                                     <option value="">SEMUA</option>
                                                     <?php
-                                                    $opsi = ['Sudah Diproses', 'Belum Diproses', 'Reject'];
+                                                    $opsi = ['Sudah Diproses', 'Belum Diproses'];
 
                                                     foreach ($opsi as $index => $value) {
                                                     ?>
@@ -178,7 +178,7 @@ if (!$dataCekUser || !$dataCekMenu) {
             </div>
 
             <div id="modalProgressPartisi" class="modal fade" role="dialog">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-dialog modal-dialog-centered" style="max-width: 70%;">
                     <div class="modal-content">
                         <div class="modal-header">
                             <div class="col-sm-11">
