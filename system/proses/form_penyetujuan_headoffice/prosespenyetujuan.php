@@ -54,28 +54,72 @@ if (!$dataCekUser || !$dataCekMenu) {
         'Additional' => [
             'tabel' => 'balistars_pengajuan_additional',
             'id' => 'idAdditional',
-            'status' => 'statusAdditional'
+            'status' => 'statusAdditional',
+            'listKelanjutan' => [
+                "Disetujui" => [
+                    "Kontrol Area" => "Pak Swi",
+                    "Pak Swi" => "Headoffice",
+                    "Headoffice" => "Payment",
+                ],
+                "Reject" => [
+                    "Kontrol Area" => "Reject",
+                    "Pak Swi" => "Reject",
+                    "Headoffice" => "Kontrol Area",
+                ]
+            ]
         ],
         'Partisi' => [
             'tabel' => 'balistars_pengajuan_partisi',
             'id' => 'idPartisi',
-            'status' => 'statusPartisi'
+            'status' => 'statusPartisi',
+            'listKelanjutan' => [
+                "Disetujui" => [
+                    "Kontrol Area" => "Pak Swi",
+                    "Pak Swi" => "Headoffice",
+                    "Headoffice" => "Payment",
+                ],
+                "Reject" => [
+                    "Kontrol Area" => "Reject",
+                    "Pak Swi" => "Reject",
+                    "Headoffice" => "Kontrol Area",
+                ]
+            ]
         ],
         'Pengembalian' => [
             'tabel' => 'balistars_pengajuan_pengembalian',
             'id' => 'idPengembalian',
-            'status' => 'statusPengembalian'
+            'status' => 'statusPengembalian',
+            'listKelanjutan' => [
+                "Disetujui" => [
+                    "Kontrol Area" => "Pak Swi",
+                    "Pak Swi" => "Headoffice",
+                    "Headoffice" => "Payment",
+                ],
+                "Reject" => [
+                    "Kontrol Area" => "Reject",
+                    "Pak Swi" => "Reject",
+                    "Headoffice" => "Kontrol Area",
+                ]
+            ]
         ],
         'Petty Cash' => [
             'tabel' => 'balistars_pengajuan_petty_cash',
             'id' => 'idPettyCash',
-            'status' => 'statusPettyCash'
+            'status' => 'statusPettyCash',
+            'listKelanjutan' => [
+                "Disetujui" => [
+                    "Headoffice" => "Payment",
+                ],
+                "Reject" => [
+                    "Headoffice" => "Reject",
+                ]
+            ]
         ],
     ];
 
     if (isset($config[$jenisPengajuan])) {
 
-        ['tabel' => $tabel, 'id' =>  $colID, 'status' => $colStatus] = $config[$jenisPengajuan];
+        ['tabel' => $tabel, 'id' =>  $colID, 'status' => $colStatus, 'listKelanjutan' => $listKelanjutan] = $config[$jenisPengajuan];
 
         $dataPengajuan = selectStatement(
             $db,
@@ -90,21 +134,6 @@ if (!$dataCekUser || !$dataCekMenu) {
             [$idPengajuan, $jenisPengajuan, "Aktif"],
             "fetch"
         );
-
-        $listKelanjutan = [
-            "Disetujui" => [
-                "Kontrol Area" => "Pak Swi",
-                "Reject Dari Headoffice" => "Pak Swi",
-                "Pak Swi" => "Headoffice",
-                "Headoffice" => "Payment",
-            ],
-            "Reject" => [
-                "Kontrol Area" => "Reject",
-                "Reject Dari Headoffice" => "Reject",
-                "Pak Swi" => "Reject",
-                "Headoffice" => "Reject Dari Headoffice",
-            ]
-        ];
 
         $tahapanSebelumnya = $dataPengajuan["tahapan"];
         $tahapanBaru = $listKelanjutan[$hasil][$tahapanSebelumnya];
@@ -122,63 +151,50 @@ if (!$dataCekUser || !$dataCekMenu) {
             $dateTimePenyetujuanTerakhir = new DateTime($dataPengajuan["timeStamp"]);
         }
 
-        $dateTimeSekarang = new DateTime();
+        $dateTimeSekarang = getTimestamp('DATABASE');
 
         $lamaWaktu = dateDiffInTime(date_diff($dateTimePenyetujuanTerakhir, $dateTimeSekarang));
 
-        if ($dataTahapanSebelumReject) {
+        $listDomain = ['legugendong.com'];
 
-            $lamaWaktu = averageTime([$lamaWaktu, strval($dataTahapanSebelumReject["lamaWaktu"])]);
-            $status = updateStatement(
-                $db,
-                "UPDATE
-                    balistars_penyetujuan
-                SET
-                    hasil = ?,
-                    lamaWaktu = ?,
-                    idUserPenyetuju = ?,
-                    timeStamp = CURRENT_TIMESTAMP(),
-                    idUserEdit = ?
-                WHERE
-                    idPenyetujuan = ?
-            ",
-                [
-                    $hasil,
-                    $lamaWaktu,
-                    $idUserAsli,
-                    $idUserAsli,
-                    $dataTahapanSebelumReject["idPenyetujuan"]
-                ]
-            );
-        } else {
-            $status = insertStatement(
-                $db,
-                "INSERT INTO
-                    balistars_penyetujuan
-                SET
-                    idPengajuan = ?,
-                    tahapan = ?,
-                    jenisPengajuan = ?,
-                    hasil = ?,
-                    lamaWaktu = ?,
-                    keterangan = ?,
-                    idUserPenyetuju = ?,
-                    statusPenyetujuan = ?,
-                    idUser = ?
-            ",
-                [
-                    $idPengajuan,
-                    $tahapanSebelumnya,
-                    $jenisPengajuan,
-                    $hasil,
-                    $lamaWaktu,
-                    trim($keterangan),
-                    $idUserAsli,
-                    "Aktif",
-                    $idUserAsli
-                ]
-            );
+        $SERV_NAME = $_SERVER['SERVER_NAME'];
+        $REQ_SCHEME = $_SERVER['REQUEST_SCHEME'];
+
+        if (in_array($SERV_NAME, $listDomain) && $REQ_SCHEME === 'https') {
+            $lamaWaktu = secondsToTime(timeInSeconds($lamaWaktu) - 3600);
         }
+
+        $status = insertStatement(
+            $db,
+            "INSERT INTO
+                balistars_penyetujuan
+            SET
+                idPengajuan = ?,
+                tahapan = ?,
+                jenisPengajuan = ?,
+                hasil = ?,
+                lamaWaktu = ?,
+                attempt = ?,
+                menit = ?,
+                keterangan = ?,
+                idUserPenyetuju = ?,
+                statusPenyetujuan = ?,
+                idUser = ?
+        ",
+            [
+                $idPengajuan,
+                $tahapanSebelumnya,
+                $jenisPengajuan,
+                $hasil,
+                $lamaWaktu,
+                $dataPengajuan['attempt'],
+                timeInMinutes($lamaWaktu),
+                trim($keterangan),
+                $idUserAsli,
+                "Aktif",
+                $idUserAsli
+            ]
+        );
 
         if ($status == true) {
             $statusTahapan = updateStatement(
@@ -195,15 +211,15 @@ if (!$dataCekUser || !$dataCekMenu) {
 
         if ($hasil === "Reject") {
             if ($status) {
-                $pesan = "Proses Reject Additional Berhasil";
+                $pesan = "Proses Reject {$jenisPengajuan} Berhasil";
             } else {
-                $pesan = "Proses Reject Additional Gagal";
+                $pesan = "Proses Reject {$jenisPengajuan} Gagal";
             }
         } else if ($hasil === "Disetujui") {
             if ($status) {
-                $pesan = "Proses Penyetujuan Additional Berhasil";
+                $pesan = "Proses Penyetujuan {$jenisPengajuan} Berhasil";
             } else {
-                $pesan = "Proses Penyetujuan Additional Gagal";
+                $pesan = "Proses Penyetujuan {$jenisPengajuan} Gagal";
             }
         }
     } else {

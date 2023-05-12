@@ -8,6 +8,7 @@ include_once $BASE_URL_PHP . '/library/fungsirupiah.php';
 include_once $BASE_URL_PHP . '/library/fungsitanggal.php';
 include_once $BASE_URL_PHP . '/library/fungsistatement.php';
 include_once $BASE_URL_PHP . '/system/fungsinavigasi.php';
+include_once $BASE_URL_PHP . '/system/proses/automailer.php';
 
 session_start();
 
@@ -60,7 +61,7 @@ if (!$dataCekUser || !$dataCekMenu) {
             $pesan = 'Proses Non Aktif Pengajuan Partisi Gagal';
         }
     } else if ($flag === 'pengajuanUlang') {
-        $sql = $db->prepare('UPDATE balistars_pengajuan_partisi SET tahapan = ?, idUserEdit = ? WHERE idPartisi=?');
+        $sql = $db->prepare('UPDATE balistars_pengajuan_partisi SET tahapan = ?, attempt = attempt + 1, idUserEdit = ? WHERE idPartisi=?');
         $status = $sql->execute(['Kontrol Area', $idUserAsli, $idPartisi]);
 
         if ($status) {
@@ -179,6 +180,35 @@ if (!$dataCekUser || !$dataCekMenu) {
 
                 if ($status) {
                     $pesan = 'Proses Tambah Pengajuan Partisi Berhasil';
+
+                    $dataPegawaiPenerima = selectStatement(
+                        $db,
+                        'SELECT 
+                            balistars_pegawai.* 
+                        FROM 
+                            balistars_pegawai
+                            INNER JOIN balistars_cabang ON balistars_pegawai.idCabang = balistars_pegawai.idCabang
+                        WHERE 
+                            balistars_cabang.area = ? 
+                            AND balistars_pegawai.idJabatan = ?',
+                        [$dataLogin['area'], 9],
+                        'fetch'
+                    );
+
+                    if ($dataPegawaiPenerima) {
+                        if ($dataPegawaiPenerima['email'] !== '') {
+                            sendEmailNotificationPengajuan(
+                                $db,
+                                $tokenCSRF,
+                                $dataPegawaiPenerima['email'],
+                                $dataPegawaiPenerima['namaPegawai'],
+                                konversiTanggal($tglPengajuan),
+                                'Kontrol Area ' . $dataLogin['area'],
+                                $dataLogin['namaPegawai'],
+                                'Additional'
+                            );
+                        }
+                    }
                 } else {
                     $pesan = 'Proses Tambah Pengajuan Partisi Gagal';
                 }

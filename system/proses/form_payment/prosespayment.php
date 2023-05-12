@@ -50,30 +50,117 @@ if (!$dataCekUser || !$dataCekMenu) {
 
     extract($_POST);
 
-    $dataUpdate = selectStatement(
-        $db,
-        'SELECT * FROM balistars_payment WHERE idPengajuan = ? AND jenisPengajuan = ?',
-        [$idPengajuan, $jenisPengajuan],
-        'fetch'
-    );
+    $config = [
+        'Additional' => [
+            'tabel' => 'balistars_pengajuan_additional',
+            'id' => 'idAdditional',
+            'status' => 'statusAdditional',
+            'listKelanjutan' => [
+                "Disetujui" => [
+                    "Kontrol Area" => "Pak Swi",
+                    "Pak Swi" => "Headoffice",
+                    "Headoffice" => "Payment",
+                ],
+                "Reject" => [
+                    "Kontrol Area" => "Reject",
+                    "Pak Swi" => "Reject",
+                    "Headoffice" => "Kontrol Area",
+                ]
+            ]
+        ],
+        'Partisi' => [
+            'tabel' => 'balistars_pengajuan_partisi',
+            'id' => 'idPartisi',
+            'status' => 'statusPartisi',
+            'listKelanjutan' => [
+                "Disetujui" => [
+                    "Kontrol Area" => "Pak Swi",
+                    "Pak Swi" => "Headoffice",
+                    "Headoffice" => "Payment",
+                ],
+                "Reject" => [
+                    "Kontrol Area" => "Reject",
+                    "Pak Swi" => "Reject",
+                    "Headoffice" => "Kontrol Area",
+                ]
+            ]
+        ],
+        'Pengembalian' => [
+            'tabel' => 'balistars_pengajuan_pengembalian',
+            'id' => 'idPengembalian',
+            'status' => 'statusPengembalian',
+            'listKelanjutan' => [
+                "Disetujui" => [
+                    "Kontrol Area" => "Pak Swi",
+                    "Pak Swi" => "Headoffice",
+                    "Headoffice" => "Payment",
+                ],
+                "Reject" => [
+                    "Kontrol Area" => "Reject",
+                    "Pak Swi" => "Reject",
+                    "Headoffice" => "Kontrol Area",
+                ]
+            ]
+        ],
+        'Petty Cash' => [
+            'tabel' => 'balistars_pengajuan_petty_cash',
+            'id' => 'idPettyCash',
+            'status' => 'statusPettyCash',
+            'listKelanjutan' => [
+                "Disetujui" => [
+                    "Headoffice" => "Payment",
+                ],
+                "Reject" => [
+                    "Headoffice" => "Reject",
+                ]
+            ]
+        ],
+    ];
 
-    $dataTahapanHeadoffice = selectStatement(
-        $db,
-        'SELECT * FROM balistars_penyetujuan WHERE idPengajuan = ? AND tahapan = ? AND jenisPengajuan = ? AND statusPenyetujuan = ?',
-        [$idPengajuan, 'Headoffice', $jenisPengajuan, 'Aktif'],
-        'fetch'
-    );
+    if (isset($config[$jenisPengajuan])) {
 
+        ['tabel' => $tabel, 'id' => $colID, 'status' => $colStatus] = $config[$jenisPengajuan];
 
-    $dateTimePenyetujuanTerakhir = new DateTime($dataTahapanHeadoffice['timeStamp']);
-    $dateTimeSekarang = new DateTime();
-
-    $lamaWaktu = dateDiffInTime(date_diff($dateTimePenyetujuanTerakhir, $dateTimeSekarang));
-
-    if ($dataUpdate) {
-        $status = insertStatement(
+        $dataUpdate = selectStatement(
             $db,
-            'UPDATE
+            'SELECT * FROM balistars_payment WHERE idPengajuan = ? AND jenisPengajuan = ?',
+            [$idPengajuan, $jenisPengajuan],
+            'fetch'
+        );
+
+        $dataPengajuan = selectStatement(
+            $db,
+            "SELECT * FROM {$tabel} WHERE {$colID} = ? ",
+            [$idPengajuan],
+            "fetch"
+        );
+
+        $dataTahapanHeadoffice = selectStatement(
+            $db,
+            'SELECT * FROM balistars_penyetujuan WHERE idPengajuan = ? AND tahapan = ? AND jenisPengajuan = ? AND statusPenyetujuan = ? ORDER BY idPenyetujuan DESC LIMIT 1',
+            [$idPengajuan, 'Headoffice', $jenisPengajuan, 'Aktif'],
+            'fetch'
+        );
+
+
+        $dateTimePenyetujuanTerakhir = new DateTime($dataTahapanHeadoffice['timeStamp']);
+        $dateTimeSekarang = getTimestamp('DATABASE');
+
+        $lamaWaktu = dateDiffInTime(date_diff($dateTimePenyetujuanTerakhir, $dateTimeSekarang));
+
+        $listDomain = ['legugendong.com'];
+
+        $SERV_NAME = $_SERVER['SERVER_NAME'];
+        $REQ_SCHEME = $_SERVER['REQUEST_SCHEME'];
+
+        if (in_array($SERV_NAME, $listDomain) && $REQ_SCHEME === 'https') {
+            $lamaWaktu = secondsToTime(timeInSeconds($lamaWaktu) - 3600);
+        }
+
+        if ($dataUpdate) {
+            $status = updateStatement(
+                $db,
+                'UPDATE
                 balistars_payment
             SET
                 tanggal = ?,
@@ -82,71 +169,68 @@ if (!$dataCekUser || !$dataCekMenu) {
             WHERE
                 idPayment = ?
             ',
-            [
-                konversiTanggal($tanggal),
-                trim($keterangan),
-                $idUserAsli,
-                $dataUpdate['idPayment'],
-            ]
-        );
+                [
+                    konversiTanggal($tanggal),
+                    trim($keterangan),
+                    $idUserAsli,
+                    $dataUpdate['idPayment'],
+                ]
+            );
 
-        if ($status) {
-            $pesan = 'Proses Update Payment Berhasil';
+            if ($status) {
+                $pesan = 'Proses Update Payment Berhasil';
+            } else {
+                $pesan = 'Proses Update Payment Gagal';
+            }
         } else {
-            $pesan = 'Proses Update Payment Gagal';
-        }
-    } else {
 
-        $status = insertStatement(
-            $db,
-            'INSERT INTO
+            $status = insertStatement(
+                $db,
+                'INSERT INTO
                 balistars_payment
             SET
                 idPengajuan = ?,
                 tanggal = ?,
                 jenisPengajuan = ?,
                 lamaWaktu = ?,
+                menit = ?,
                 keterangan = ?,
                 statusPayment = ?,
                 idUser = ?
             ',
-            [
-                $idPengajuan,
-                konversiTanggal($tanggal),
-                $jenisPengajuan,
-                $lamaWaktu,
-                trim($keterangan),
-                'Aktif',
-                $idUserAsli
-            ]
-        );
+                [
+                    $idPengajuan,
+                    konversiTanggal($tanggal),
+                    $jenisPengajuan,
+                    $lamaWaktu,
+                    timeInMinutes($lamaWaktu),
+                    trim($keterangan),
+                    'Aktif',
+                    $idUserAsli
+                ]
+            );
 
-        if ($status) {
-            $pesan = 'Proses Update Payment Berhasil';
+            if ($status) {
+                $pesan = 'Proses Update Payment Berhasil';
 
-            $tabel = [
-                'Additional' => 'balistars_pengajuan_additional',
-                'Partisi' => 'balistars_pengajuan_additional',
-                'Pengembalian' => 'balistars_pengajuan_pengembalian',
-                'Petty Cash' => 'balistars_pengajuan_petty_cash'
-            ];
-
-            if (isset($tabel[$jenisPengajuan])) {
                 $statusTahapan = updateStatement(
                     $db,
                     "UPDATE
-                        {$tabel[$jenisPengajuan]}
-                    SET
-                        tahapan = ?
-                    WHERE
-                        id{$jenisPengajuan} = ?
+                            {$tabel}
+                        SET
+                            tahapan = ?
+                        WHERE
+                            {$colID} = ?
                     ",
                     ['Final', $idPengajuan]
                 );
+            } else {
+                $pesan = 'Proses Update Payment Gagal';
             }
-        } else {
-            $pesan = 'Proses Update Payment Gagal';
         }
+    } else {
+        $status = false;
+        $pesan = 'Jenis Pengajuan Tidak Valid';
     }
 
     $data = [

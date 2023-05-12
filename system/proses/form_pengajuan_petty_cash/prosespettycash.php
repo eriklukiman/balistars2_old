@@ -8,6 +8,7 @@ include_once $BASE_URL_PHP . '/library/fungsirupiah.php';
 include_once $BASE_URL_PHP . '/library/fungsitanggal.php';
 include_once $BASE_URL_PHP . '/library/fungsistatement.php';
 include_once $BASE_URL_PHP . '/system/fungsinavigasi.php';
+include_once $BASE_URL_PHP . '/system/proses/automailer.php';
 
 session_start();
 
@@ -60,8 +61,8 @@ if (!$dataCekUser || !$dataCekMenu) {
             $pesan = 'Proses Non Aktif Pengajuan Petty Cash Gagal';
         }
     } else if ($flag === 'pengajuanUlang') {
-        $sql = $db->prepare('UPDATE balistars_pengajuan_petty_cash SET tahapan = ?, idUserEdit = ? WHERE idPettyCash=?');
-        $status = $sql->execute(['Kontrol Area', $idUserAsli, $idPettyCash]);
+        $sql = $db->prepare('UPDATE balistars_pengajuan_petty_cash SET tahapan = ?, attempt = attempt + 1, idUserEdit = ? WHERE idPettyCash=?');
+        $status = $sql->execute(['Headoffice', $idUserAsli, $idPettyCash]);
 
         if ($status) {
             $pesan = 'Proses Pengajuan Ulang Petty Cash Berhasil';
@@ -98,6 +99,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                         estimasiOmset = ?,
                         estimasiBiayaPengeluaran = ?,
                         nominal = ?,
+                        biayaEksternal = ?,
                         noPO = ?,
                         keterangan = ?,
                         idUserEdit = ?
@@ -111,6 +113,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                         ubahToInt($estimasiOmset),
                         ubahToInt($estimasiBiayaPengeluaran),
                         ubahToInt($nominal),
+                        ubahToInt($biayaEksternal),
                         $noPO,
                         $keterangan,
                         $idUserAsli,
@@ -135,6 +138,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                         estimasiOmset = ?,
                         estimasiBiayaPengeluaran = ?,
                         nominal = ?,
+                        biayaEksternal = ?,
                         noPO = ?,
                         keterangan = ?,
                         tahapan = ?,
@@ -149,6 +153,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                         ubahToInt($estimasiOmset),
                         ubahToInt($estimasiBiayaPengeluaran),
                         ubahToInt($nominal),
+                        ubahToInt($biayaEksternal),
                         $noPO,
                         $keterangan,
                         'Headoffice',
@@ -160,6 +165,37 @@ if (!$dataCekUser || !$dataCekMenu) {
 
                 if ($status) {
                     $pesan = 'Proses Tambah Pengajuan Petty Cash Berhasil';
+
+                    $dataPegawaiPenerima = selectStatement(
+                        $db,
+                        'SELECT 
+                            balistars_pegawai.* 
+                        FROM 
+                            balistars_pegawai
+                            INNER JOIN balistars_user ON balistars_pegawai.idPegawai ON balistars_user.idPegawai
+                            INNER JOIN balistars_user_detail ON balistars_user_detail.idUser ON balistars_user.idUser
+                            INNER JOIN balistars_menu_sub ON balistars_user_detail.idMenuSub ON balistars_menu_sub.idMenuSub
+                        WHERE 
+                            balistars_pegawai.idJabatan = ?
+                            AND balistars_menu_sub.namaFolder = ?',
+                        [2, 'form_penyetujuan_headoffice'],
+                        'fetch'
+                    );
+
+                    if ($dataPegawaiPenerima) {
+                        if ($dataPegawaiPenerima['email'] !== '') {
+                            sendEmailNotificationPengajuan(
+                                $db,
+                                $tokenCSRF,
+                                $dataPegawaiPenerima['email'],
+                                $dataPegawaiPenerima['namaPegawai'],
+                                konversiTanggal($tglPengajuan),
+                                'Headoffice',
+                                $dataLogin['namaPegawai'],
+                                'Additional'
+                            );
+                        }
+                    }
                 } else {
                     $pesan = 'Proses Tambah Pengajuan Petty Cash Gagal';
                 }
