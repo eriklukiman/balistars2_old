@@ -19,9 +19,11 @@ function detailPrefixNomor(string $jenis)
 
 function altvDBConn()
 {
+    return $GLOBALS['db'];
+
     $dbHost = "localhost";
-    $dbUser = "rx";
-    $dbPassword = "a";
+    $dbUser = "bintangbali";
+    $dbPassword = "b@l!b3Rsin4r";
     $dbName = "balistars";
     /*$dbUser = "u9819928_root";
     $dbPassword = "balistarsgroup0520";
