@@ -4,14 +4,15 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
+require_once '../../library/konfigurasiurl.php';
 // Memanggil Fungsi Exception  di folder PHP Mailer
-require_once $_SERVER['DOCUMENT_ROOT'] . '/balistars2/assets/vendor/PHPMailer/src/Exception.php';
+require_once $BASE_URL_HTML . '/assets/vendor/PHPMailer/src/Exception.php';
 
 // Memanggil File Utama PHPMailer di folder PHP Mailer
-require_once $_SERVER['DOCUMENT_ROOT'] . '/balistars2/assets/vendor/PHPMailer/src/PHPMailer.php';
+require_once $BASE_URL_HTML . '/assets/vendor/PHPMailer/src/PHPMailer.php';
 
 // Memanggil Fungsi SMTP di folder PHP Mailer
-require_once $_SERVER['DOCUMENT_ROOT'] . '/balistars2/assets/vendor/PHPMailer/src/SMTP.php';
+require_once $BASE_URL_HTML . '/assets/vendor/PHPMailer/src/SMTP.php';
 
 
 function sendEmailNotificationPengajuan(
