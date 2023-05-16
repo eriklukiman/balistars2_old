@@ -171,7 +171,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                                             </div>
                                         </div>
                                     </div>
-                                    <div id="dataDaftarPayment"></div>
+                                    <div id="dataDaftarPayment" style="overflow-x: auto;"></div>
 
                                     <!-- End Body -->
                                 </div>

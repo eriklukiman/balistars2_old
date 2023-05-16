@@ -157,7 +157,17 @@ function prosesPengembalian(btn, statusPengajuanUlang = false) {
         });
     });
 
-    const validasi = formValidation(dataForm);
+    const validasi = formValidation(dataForm, [
+        "linkSuratPengajuan",
+        "linkSuratPernyataanCustomer",
+        "linkNotaPenjualan",
+        "linkBuktiTransfer",
+        "linkBuktiPotongPPH",
+        "linkBuktiPotongPPN",
+        "linkRincianPenjualanExcel",
+        "linkBuktiChatCustomer",
+    ]);
+
     if (validasi === true) {
         $.ajax({
             url: "prosespengembalian.php",
@@ -167,7 +177,13 @@ function prosesPengembalian(btn, statusPengajuanUlang = false) {
             contentType: false,
             data: dataForm,
             dataType: "json",
+            beforeSend: function () {
+                if (dataForm.get("flag") === "tambah") {
+                    $(".overlay").show();
+                }
+            },
             success: function (data) {
+                $(".overlay").hide();
                 const { status, pesan } = data;
 
                 notifikasi(status, pesan);

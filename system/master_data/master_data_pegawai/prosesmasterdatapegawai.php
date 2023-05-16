@@ -62,6 +62,7 @@ else {
     $sql = $db->prepare('UPDATE balistars_pegawai set 
       namaPegawai    = ?,
       NIK            = ?,
+      email            = ?,
       alamatPegawai  = ?,
       tglMulaiKerja  = ?,
       noTelpPegawai  = ?,
@@ -74,6 +75,7 @@ else {
     $hasil = $sql->execute([
       $namaPegawai,
       $NIK,
+      $email,
       $alamatPegawai,
       $tglMulaiKerja,
       $noTelpPegawai,
@@ -88,6 +90,7 @@ else {
     $sql = $db->prepare('INSERT INTO balistars_pegawai set 
       namaPegawai    = ?,
       NIK            = ?,
+      email            = ?,
       alamatPegawai  = ?,
       tglMulaiKerja  = ?,
       noTelpPegawai  = ?,
@@ -99,6 +102,7 @@ else {
     $hasil = $sql->execute([
       $namaPegawai,
       $NIK,
+      $email,
       $alamatPegawai,
       $tglMulaiKerja,
       $noTelpPegawai,
@@ -115,5 +119,3 @@ if($hasil){
   $data = array('flag' => $flag, 'notifikasi' => 1, 'parameterOrder' => $parameterOrder);
 }
 echo json_encode($data);
-
-?>

@@ -7,6 +7,7 @@ include_once $BASE_URL_PHP . '/library/fungsiutilitas.php';
 include_once $BASE_URL_PHP . '/library/fungsirupiah.php';
 include_once $BASE_URL_PHP . '/library/fungsitanggal.php';
 include_once $BASE_URL_PHP . '/library/fungsistatement.php';
+include_once $BASE_URL_PHP . '/system/proses/automailer.php';
 include_once $BASE_URL_PHP . '/system/fungsinavigasi.php';
 
 session_start();
@@ -60,7 +61,7 @@ if (!$dataCekUser || !$dataCekMenu) {
             $pesan = 'Proses Non Aktif Pengajuan Pengembalian Gagal';
         }
     } else if ($flag === 'pengajuanUlang') {
-        $sql = $db->prepare('UPDATE balistars_pengajuan_pengembalian SET tahapan = ?, idUserEdit = ? WHERE idPengembalian=?');
+        $sql = $db->prepare('UPDATE balistars_pengajuan_pengembalian SET tahapan = ?, attempt = attempt + 1, idUserEdit = ? WHERE idPengembalian=?');
         $status = $sql->execute(['Kontrol Area', $idUserAsli, $idPengembalian]);
 
         if ($status) {
@@ -71,7 +72,6 @@ if (!$dataCekUser || !$dataCekMenu) {
     } else {
         $listKolom = [
             'linkSuratPengajuan' => 'Surat Pengajuan',
-            'linkSuratPernyataanCustomer' => 'Surat Pernyataan Customer',
             'linkNotaPenjualan' => 'Nota Penjualan',
             'linkBuktiTransfer' => 'Bukti Transfer',
             'linkBuktiPotongPPH' => 'Bukti Potong PPH',
@@ -83,8 +83,10 @@ if (!$dataCekUser || !$dataCekMenu) {
         $outputValidasi = [];
 
         foreach ($listKolom as $kolom => $label) {
-            if (!preg_match('/https\:\/\/[\w.]+.com\//', ${$kolom})) {
-                $outputValidasi[] = $listKolom[$kolom];
+            if (${$kolom} !== '') {
+                if (!preg_match('/https\:\/\/[\w.]+.com\//', ${$kolom})) {
+                    $outputValidasi[] = $listKolom[$kolom];
+                }
             }
         }
 
@@ -123,7 +125,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                         ubahToInt($jumlahTransaksi),
                         ubahToInt($totalPengembalian),
                         $linkSuratPengajuan,
-                        $linkSuratPernyataanCustomer,
+                        '',
                         $linkNotaPenjualan,
                         $linkBuktiTransfer,
                         $linkBuktiPotongPPH,
@@ -169,7 +171,7 @@ if (!$dataCekUser || !$dataCekMenu) {
                         ubahToInt($jumlahTransaksi),
                         ubahToInt($totalPengembalian),
                         $linkSuratPengajuan,
-                        $linkSuratPernyataanCustomer,
+                        '',
                         $linkNotaPenjualan,
                         $linkBuktiTransfer,
                         $linkBuktiPotongPPH,
@@ -185,6 +187,35 @@ if (!$dataCekUser || !$dataCekMenu) {
 
                 if ($status) {
                     $pesan = 'Proses Tambah Pengajuan Pengembalian Berhasil';
+
+                    $dataPegawaiPenerima = selectStatement(
+                        $db,
+                        'SELECT 
+                            balistars_pegawai.* 
+                        FROM 
+                            balistars_pegawai
+                            INNER JOIN balistars_cabang ON balistars_pegawai.idCabang = balistars_pegawai.idCabang
+                        WHERE 
+                            balistars_cabang.area = ? 
+                            AND balistars_pegawai.idJabatan = ?',
+                        [$dataLogin['area'], 9],
+                        'fetch'
+                    );
+
+                    if ($dataPegawaiPenerima) {
+                        if ($dataPegawaiPenerima['email'] !== '') {
+                            sendEmailNotificationPengajuan(
+                                $db,
+                                $tokenCSRF,
+                                $dataPegawaiPenerima['email'],
+                                $dataPegawaiPenerima['namaPegawai'],
+                                konversiTanggal($tglPengajuan),
+                                'Kontrol Area ' . $dataLogin['area'],
+                                $dataLogin['namaPegawai'],
+                                'Additional'
+                            );
+                        }
+                    }
                 } else {
                     $pesan = 'Proses Tambah Pengajuan Pengembalian Gagal';
                 }

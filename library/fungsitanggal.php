@@ -330,3 +330,26 @@ function averageTime(array $listOfTime)
 
     return secondsToTime($average);
 }
+
+function getTimestamp(string $type, string $date = 'now')
+{
+    $listDomain = ['legugendong.com'];
+
+    $SERV_NAME = $_SERVER['SERVER_NAME'];
+    $REQ_SCHEME = $_SERVER['REQUEST_SCHEME'];
+
+    if ($type === 'LOCALE') {
+        $dateTime = new DateTime($date, new DateTimeZone('Asia/Kuala_Lumpur'));
+    } else if ($type === 'DATABASE') {
+        if (in_array($SERV_NAME, $listDomain) && $REQ_SCHEME === 'https') {
+            $dateTime = new DateTime($date, new DateTimeZone('Asia/Jakarta'));
+        } else {
+            $dateTime = new DateTime($date, new DateTimeZone('Asia/Kuala_Lumpur'));
+        }
+    } else {
+        return '-';
+    }
+
+
+    return $dateTime;
+}

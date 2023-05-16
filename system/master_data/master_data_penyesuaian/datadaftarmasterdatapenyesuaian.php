@@ -92,6 +92,7 @@ if (isset($tanggal[0]) && isset($tanggal[1])) {
             <td class="align-middle align-center"><?= wordwrap($row['namaCabang'], 50, '<br>') ?></td>
             <td class="align-middle align-center"><?= ubahTanggalIndo($row['tanggalPenyesuaian'], 50, '<br>') ?></td>
             <td class="align-middle align-center"><?= wordwrap($row['status'], 50, '<br>') ?></td>
+            <td class="align-middle align-center"><?= wordwrap($row['includeLabaRugiKotor'], 50, '<br>') ?></td>
             <td class="align-middle align-center">Rp <?= ubahToRp($row['nominal'], 50, '<br>') ?></td>
             <td class=""><?= wordwrap($row['keterangan'], 50, '<br>') ?></td>
         </tr>

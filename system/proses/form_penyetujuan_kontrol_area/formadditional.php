@@ -65,22 +65,24 @@ if (!$dataCekUser || !$dataCekMenu) {
         $flag = 'tambah';
     }
 
-    $idJabatan = intval($dataLogin['idJabatan']);
-    $idPegawai = intval($dataLogin['idPegawai']);
+    $tahapan = ['Kontrol Area'];
 
-    $area = $dataLogin['area'];
-
-    $idCabangCakupan = [];
-    $tahapan = ['Kontrol Area', 'Reject Dari Headoffice'];
-
-    $dataCabang = selectStatement(
+    $dataPenyetujuanTerakhir = selectStatement(
         $db,
-        'SELECT idCabang FROM balistars_cabang WHERE area = ?',
-        [$area],
+        'SELECT * FROM balistars_penyetujuan WHERE idPengajuan = ? AND statusPenyetujuan = ? AND jenisPengajuan = ? ORDER BY idPenyetujuan DESC LIMIT 1',
+        [$idAdditional, 'Aktif', 'Additional'],
+        'fetch'
     );
 
-    $idCabangCakupan = array_column($dataCabang, 'idCabang');
-
+    if ($dataPenyetujuanTerakhir) {
+        if ($dataPenyetujuanTerakhir['hasil'] === 'Reject' && $dataPenyetujuanTerakhir['tahapan'] === 'Headoffice') {
+            $state = 'Reject Dari Headoffice';
+        } else {
+            $state = 'Pengajuan Cabang';
+        }
+    } else {
+        $state = 'Pengajuan Cabang';
+    }
 
 ?>
     <form id="formAdditional">
@@ -112,7 +114,14 @@ if (!$dataCekUser || !$dataCekMenu) {
             </div>
             <div class="col-md-4 form-group">
                 <label for="ratio">RATIO</label>
-                <input type="text" class="form-control form-control-lg" disabled id="ratio" placeholder="Ratio" value="<?= $dataUpdate['ratio'] ?>">
+                <div class="input-group">
+                    <input type="text" class="form-control form-control-lg" id="ratio" placeholder="Ratio" value="<?= $dataUpdate['ratio'] ?>" disabled>
+                    <div class="input-group-append">
+                        <span class="input-group-text">
+                            %
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </form>
@@ -128,6 +137,15 @@ if (!$dataCekUser || !$dataCekMenu) {
             </div>
         </div>
         <div class="card-body">
+            <?php
+            if ($state === 'Reject Dari Headoffice') {
+            ?>
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-circle pr-3"></i><strong>PENGAJUAN TELAH DI REJECT OLEH HEADOFFICE, MOHON DI KONFIRMASI ULANG</strong>
+                </div>
+            <?php
+            }
+            ?>
             <form id="formBuktiLampiran">
                 <div class="row">
                     <div class="col-md-4 form-group">

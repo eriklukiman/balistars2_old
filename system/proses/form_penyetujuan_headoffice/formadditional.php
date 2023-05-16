@@ -97,7 +97,14 @@ if (!$dataCekUser || !$dataCekMenu) {
             </div>
             <div class="col-md-4 form-group">
                 <label for="ratio">RATIO</label>
-                <input type="text" class="form-control form-control-lg" disabled id="ratio" placeholder="Ratio" value="<?= $dataUpdate['ratio'] ?>">
+                <div class="input-group">
+                    <input type="text" class="form-control form-control-lg" id="ratio" placeholder="Ratio" value="<?= $dataUpdate['ratio'] ?>" disabled>
+                    <div class="input-group-append">
+                        <span class="input-group-text">
+                            %
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </form>

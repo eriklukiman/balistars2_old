@@ -67,6 +67,23 @@ if (!$dataCekUser || !$dataCekMenu) {
 
     $tahapan = ['Pak Swi'];
 
+    $dataPenyetujuanTerakhir = selectStatement(
+        $db,
+        'SELECT * FROM balistars_penyetujuan WHERE idPengajuan = ? AND statusPenyetujuan = ? AND jenisPengajuan = ? ORDER BY idPenyetujuan DESC LIMIT 1',
+        [$idAdditional, 'Aktif', 'Additional'],
+        'fetch'
+    );
+
+    if ($dataPenyetujuanTerakhir) {
+        if ($dataPenyetujuanTerakhir['hasil'] === 'Reject' && $dataPenyetujuanTerakhir['tahapan'] === 'Headoffice') {
+            $state = 'Reject Dari Headoffice';
+        } else {
+            $state = 'Pengajuan Cabang';
+        }
+    } else {
+        $state = 'Pengajuan Cabang';
+    }
+
 
 ?>
     <form id="formAdditional">
@@ -98,7 +115,14 @@ if (!$dataCekUser || !$dataCekMenu) {
             </div>
             <div class="col-md-4 form-group">
                 <label for="ratio">RATIO</label>
-                <input type="text" class="form-control form-control-lg" disabled id="ratio" placeholder="Ratio" value="<?= $dataUpdate['ratio'] ?>">
+                <div class="input-group">
+                    <input type="text" class="form-control form-control-lg" id="ratio" placeholder="Ratio" value="<?= $dataUpdate['ratio'] ?>" disabled>
+                    <div class="input-group-append">
+                        <span class="input-group-text">
+                            %
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </form>

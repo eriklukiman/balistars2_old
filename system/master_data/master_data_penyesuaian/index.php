@@ -175,6 +175,11 @@ extract($_REQUEST);
                                                 </button>
                                             </th>
                                             <th class="text-center">
+                                                <button class="btn btn-sm btn-info" onclick="dataDaftarMasterDataPenyesuaian('includeLabaRugiKotor')">
+                                                    <strong>INCLUDE LRK</strong>
+                                                </button>
+                                            </th>
+                                            <th class="text-center">
                                                 <button class="btn btn-sm btn-info" onclick="dataDaftarMasterDataPenyesuaian('nominal')">
                                                     <strong>NOMINAL</strong>
                                                 </button>

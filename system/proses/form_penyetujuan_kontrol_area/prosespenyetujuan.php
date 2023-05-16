@@ -8,6 +8,7 @@ include_once $BASE_URL_PHP . '/library/fungsirupiah.php';
 include_once $BASE_URL_PHP . '/library/fungsitanggal.php';
 include_once $BASE_URL_PHP . '/library/fungsistatement.php';
 include_once $BASE_URL_PHP . '/system/fungsinavigasi.php';
+include_once $BASE_URL_PHP . '/system/proses/automailer.php';
 
 session_start();
 
@@ -89,27 +90,18 @@ if (!$dataCekUser || !$dataCekMenu) {
         $listKelanjutan = [
             "Disetujui" => [
                 "Kontrol Area" => "Pak Swi",
-                "Reject Dari Headoffice" => "Pak Swi",
                 "Pak Swi" => "Headoffice",
                 "Headoffice" => "Payment",
             ],
             "Reject" => [
                 "Kontrol Area" => "Reject",
-                "Reject Dari Headoffice" => "Reject",
                 "Pak Swi" => "Reject",
-                "Headoffice" => "Reject Dari Headoffice",
+                "Headoffice" => "Kontrol Area",
             ]
         ];
 
         $tahapanSebelumnya = $dataPengajuan["tahapan"];
         $tahapanBaru = $listKelanjutan[$hasil][$tahapanSebelumnya];
-
-        $dataTahapanSebelumReject = selectStatement(
-            $db,
-            "SELECT * FROM balistars_penyetujuan WHERE idPengajuan = ? AND tahapan = ? AND jenisPengajuan = ? AND statusPenyetujuan = ?",
-            [$idPengajuan, $tahapanSebelumnya, $jenisPengajuan, "Aktif"],
-            "fetch"
-        );
 
         if ($dataPenyetujuanTerakhir) {
             $dateTimePenyetujuanTerakhir = new DateTime($dataPenyetujuanTerakhir["timeStamp"]);
@@ -117,63 +109,49 @@ if (!$dataCekUser || !$dataCekMenu) {
             $dateTimePenyetujuanTerakhir = new DateTime($dataPengajuan["timeStamp"]);
         }
 
-        $dateTimeSekarang = new DateTime();
+        $dateTimeSekarang = getTimestamp('DATABASE');
 
         $lamaWaktu = dateDiffInTime(date_diff($dateTimePenyetujuanTerakhir, $dateTimeSekarang));
+        $listDomain = ['legugendong.com'];
 
-        if ($dataTahapanSebelumReject) {
+        $SERV_NAME = $_SERVER['SERVER_NAME'];
+        $REQ_SCHEME = $_SERVER['REQUEST_SCHEME'];
 
-            $lamaWaktu = averageTime([$lamaWaktu, strval($dataTahapanSebelumReject["lamaWaktu"])]);
-            $status = updateStatement(
-                $db,
-                "UPDATE
-                    balistars_penyetujuan
-                SET
-                    hasil = ?,
-                    lamaWaktu = ?,
-                    idUserPenyetuju = ?,
-                    timeStamp = CURRENT_TIMESTAMP(),
-                    idUserEdit = ?
-                WHERE
-                    idPenyetujuan = ?
-            ",
-                [
-                    $hasil,
-                    $lamaWaktu,
-                    $idUserAsli,
-                    $idUserAsli,
-                    $dataTahapanSebelumReject["idPenyetujuan"]
-                ]
-            );
-        } else {
-            $status = insertStatement(
-                $db,
-                "INSERT INTO
-                    balistars_penyetujuan
-                SET
-                    idPengajuan = ?,
-                    tahapan = ?,
-                    jenisPengajuan = ?,
-                    hasil = ?,
-                    lamaWaktu = ?,
-                    keterangan = ?,
-                    idUserPenyetuju = ?,
-                    statusPenyetujuan = ?,
-                    idUser = ?
-            ",
-                [
-                    $idPengajuan,
-                    $tahapanSebelumnya,
-                    $jenisPengajuan,
-                    $hasil,
-                    $lamaWaktu,
-                    trim($keterangan),
-                    $idUserAsli,
-                    "Aktif",
-                    $idUserAsli
-                ]
-            );
+        if (in_array($SERV_NAME, $listDomain) && $REQ_SCHEME === 'https') {
+            $lamaWaktu = secondsToTime(timeInSeconds($lamaWaktu) - 3600);
         }
+
+        $status = insertStatement(
+            $db,
+            "INSERT INTO
+                balistars_penyetujuan
+            SET
+                idPengajuan = ?,
+                tahapan = ?,
+                jenisPengajuan = ?,
+                hasil = ?,
+                lamaWaktu = ?,
+                attempt = ?,
+                menit = ?,
+                keterangan = ?,
+                idUserPenyetuju = ?,
+                statusPenyetujuan = ?,
+                idUser = ?
+        ",
+            [
+                $idPengajuan,
+                $tahapanSebelumnya,
+                $jenisPengajuan,
+                $hasil,
+                $lamaWaktu,
+                $dataPengajuan['attempt'],
+                timeInMinutes($lamaWaktu),
+                trim($keterangan),
+                $idUserAsli,
+                "Aktif",
+                $idUserAsli
+            ]
+        );
 
         if ($status == true) {
             $statusTahapan = updateStatement(
@@ -190,15 +168,50 @@ if (!$dataCekUser || !$dataCekMenu) {
 
         if ($hasil === "Reject") {
             if ($status) {
-                $pesan = "Proses Reject Additional Berhasil";
+                $pesan = "Proses Reject {$jenisPengajuan} Berhasil";
             } else {
-                $pesan = "Proses Reject Additional Gagal";
+                $pesan = "Proses Reject {$jenisPengajuan} Gagal";
             }
         } else if ($hasil === "Disetujui") {
             if ($status) {
-                $pesan = "Proses Penyetujuan Additional Berhasil";
+                $pesan = "Proses Penyetujuan {$jenisPengajuan} Berhasil";
+
+                $dataPegawaiPenerima = selectStatement(
+                    $db,
+                    'SELECT * FROM balistars_pegawai WHERE idPegawai = ?',
+                    [164],
+                    'fetch'
+                );
+
+                $namaPegawaiPembuat = selectStatement(
+                    $db,
+                    'SELECT 
+                        balistars_pegawai.namaPegawai
+                    FROM 
+                        balistars_pegawai
+                        INNER JOIN balistars_user ON balistars_pegawai.idPegawai = balistars_user.idPegawai
+                    WHERE
+                        balistars_user.idUser = ?',
+                    [$dataPengajuan['idUser']],
+                    'fetch'
+                )['namaPegawai'];
+
+                if ($dataPegawaiPenerima) {
+                    if ($dataPegawaiPenerima['email'] !== '') {
+                        sendEmailNotificationPengajuan(
+                            $db,
+                            $tokenCSRF,
+                            $dataPegawaiPenerima['email'],
+                            $dataPegawaiPenerima['namaPegawai'],
+                            date('Y-m-d'),
+                            $tahapanBaru,
+                            $namaPegawaiPembuat,
+                            $jenisPengajuan,
+                        );
+                    }
+                }
             } else {
-                $pesan = "Proses Penyetujuan Additional Gagal";
+                $pesan = "Proses Penyetujuan {$jenisPengajuan} Gagal";
             }
         }
     } else {

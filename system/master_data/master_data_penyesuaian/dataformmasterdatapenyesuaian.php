@@ -134,9 +134,25 @@ if ($flag == 'update') {
     <div class="form-group row">
         <div class="col-sm-6">
             <label>Nominal</label>
-            <input type="text" class="form-control" placeholder="Input Nominal" name="nominal" id="nominal" onkeyup="ubahToRp('#nominal')" value="<?= $dataUpdate['nominal'] ?? '' ?>">
+            <input type="text" class="form-control form-control-lg" placeholder="Input Nominal" name="nominal" id="nominal" onkeyup="ubahToRp('#nominal')" value="<?= $dataUpdate['nominal'] ?? '' ?>">
         </div>
-        <div class="col-sm-6" id=boxTipePembayaran>
+        <div class="col-sm-6">
+            <label>Include Laba Rugi Kotor</label>
+            <select name="includeLabaRugiKotor" id="includeLabaRugiKotor" class="form-control select2">
+                <?php
+                $arrayTipe = array('Ya', 'Tidak');
+                foreach ($arrayTipe as $data) {
+                    $selected = selected($data, $dataUpdate['includeLabaRugiKotor'] ?? '');
+                ?>
+                    <option value="<?= $data ?>" <?= $selected ?>> <?= $data ?> </option>
+                <?php
+                }
+                ?>
+            </select>
+        </div>
+    </div>
+    <div class="form-group row">
+        <div class="col-md-12" id="boxTipePembayaran">
 
         </div>
     </div>
@@ -146,6 +162,7 @@ if ($flag == 'update') {
             <textarea class="form-control" id="keterangan" name="keterangan"> <?= $dataUpdate['keterangan'] ?? '' ?></textarea>
         </div>
     </div>
+
     <div class="form-group">
         <button type="button" class="btn btn-primary" onclick="prosesMasterDataPenyesuaian()">
             <i class="fa fa-save pr-2"></i> <strong>SAVE</strong>

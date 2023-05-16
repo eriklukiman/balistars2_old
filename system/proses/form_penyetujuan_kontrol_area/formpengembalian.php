@@ -65,21 +65,24 @@ if (!$dataCekUser || !$dataCekMenu) {
         $flag = 'tambah';
     }
 
-    $idJabatan = intval($dataLogin['idJabatan']);
-    $idPegawai = intval($dataLogin['idPegawai']);
+    $tahapan = ['Kontrol Area'];
 
-    $area = $dataLogin['area'];
-
-    $tahapan = ['Kontrol Area', 'Reject Dari Headoffice'];
-
-    $dataCabang = selectStatement(
+    $dataPenyetujuanTerakhir = selectStatement(
         $db,
-        'SELECT idCabang FROM balistars_cabang WHERE area = ?',
-        [$area],
+        'SELECT * FROM balistars_penyetujuan WHERE idPengajuan = ? AND statusPenyetujuan = ? AND jenisPengajuan = ? ORDER BY idPenyetujuan DESC LIMIT 1',
+        [$idPengembalian, 'Aktif', 'Pengembalian'],
+        'fetch'
     );
 
-    $idCabangCakupan = array_column($dataCabang, 'idCabang');
-
+    if ($dataPenyetujuanTerakhir) {
+        if ($dataPenyetujuanTerakhir['hasil'] === 'Reject' && $dataPenyetujuanTerakhir['tahapan'] === 'Headoffice') {
+            $state = 'Reject Dari Headoffice';
+        } else {
+            $state = 'Pengajuan Cabang';
+        }
+    } else {
+        $state = 'Pengajuan Cabang';
+    }
 
 ?>
     <form id="formPengembalian">
@@ -117,6 +120,15 @@ if (!$dataCekUser || !$dataCekMenu) {
             </div>
         </div>
         <div class="card-body">
+            <?php
+            if ($state === 'Reject Dari Headoffice') {
+            ?>
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-circle pr-3"></i><strong>PENGAJUAN TELAH DI REJECT OLEH HEADOFFICE, MOHON DI KONFIRMASI ULANG</strong>
+                </div>
+            <?php
+            }
+            ?>
             <form id="formBuktiLampiran">
                 <div class="row">
                     <div class="col-md-4 form-group">
@@ -132,14 +144,10 @@ if (!$dataCekUser || !$dataCekMenu) {
                     </div>
                     <div class="col-md-4 form-group">
                         <label for="linkSuratPernyataanCustomer">SURAT PERNYATAAN CUSTOMER</label>
-                        <div class="input-group">
-                            <input type="text" disabled id="linkSuratPernyataanCustomer" class="input-link form-control" placeholder="Link Surat Pernyataan Customer" value="<?= $dataUpdate['linkSuratPernyataanCustomer'] ?>">
-                            <div class="input-group-append">
-                                <span class="input-group-text">
-                                    <a target="_blank" tabindex="-1" href="<?= $dataUpdate['linkSuratPernyataanCustomer'] ?? '#' ?>" data-id="linkSuratPernyataanCustomer" class="btn <?= $dataUpdate['linkSuratPernyataanCustomer'] ? 'btn-danger' : 'btn-secondary' ?>"><i class="fas fa-external-link-alt"></i></a>
-                                </span>
-                            </div>
+                        <div>
+                            <a class="btn btn-primary h-100 w-100" href="<?= $BASE_URL_HTML ?>/system/proses/form_penyetujuan_kontrol_area/template/surat_pengajuan/?id=<?= $idPengembalian ?>&preview" target="_blank"><strong>VIEW SURAT</strong></a>
                         </div>
+                        <input type="hidden" name="linkSuratPernyataanCustomer" value="">
                     </div>
                     <div class="col-md-4 form-group">
                         <label for="linkNotaPenjualan">NOTA PENJUALAN</label>
@@ -220,7 +228,7 @@ if (!$dataCekUser || !$dataCekMenu) {
     ?>
         <div class="row">
             <div class="col-md-8 form-group">
-                <textarea name="keteranganPenyetujuan" id="keteranganPenyetujuan" rows="7" class="form-control"></textarea>
+                <textarea name="keteranganPenyetujuan" id="keteranganPenyetujuan" rows="5" class="form-control"></textarea>
             </div>
             <div class="col-md-4 form-group">
                 <label for="">DETAIL PENYETUJUAN</label>

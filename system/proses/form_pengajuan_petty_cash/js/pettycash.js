@@ -124,6 +124,8 @@ function pengajuanUlang(btn, idPettyCash) {
                     const { status, pesan } = data;
 
                     notifikasi(status, pesan);
+
+                    getFormPettyCash();
                     dataDaftarPettyCash();
                 },
             });
@@ -133,11 +135,12 @@ function pengajuanUlang(btn, idPettyCash) {
                 icon: "warning",
             });
             btn.removeAttr("disabled");
+            getFormPettyCash();
         }
     });
 }
 
-function prosesPettyCash(btn) {
+function prosesPettyCash(btn, statusPengajuanUlang = false) {
     btn.attr("disabled", "disabled");
 
     const formPettyCash = document.getElementById("formPettyCash");
@@ -164,15 +167,23 @@ function prosesPettyCash(btn) {
             contentType: false,
             data: dataForm,
             dataType: "json",
+            beforeSend: function () {
+                if (dataForm.get("flag") === "tambah") {
+                    $(".overlay").show();
+                }
+            },
             success: function (data) {
+                $(".overlay").hide();
                 const { status, pesan } = data;
 
                 notifikasi(status, pesan);
 
                 btn.removeAttr("disabled");
                 if (status === true) {
-                    getFormPettyCash();
-                    dataDaftarPettyCash();
+                    if (statusPengajuanUlang === false) {
+                        getFormPettyCash();
+                        dataDaftarPettyCash();
+                    }
                 }
             },
         });

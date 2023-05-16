@@ -1,0 +1,1 @@
+ALTER TABLE `balistars_pegawai` ADD `email` VARCHAR(255) NOT NULL DEFAULT '' AFTER `NIK`;

@@ -1,0 +1,177 @@
+@page{
+    size: A4;
+    margin: 1rem 0rem;
+}
+
+@media print {
+    html,body{
+        width: 210mm;
+        height: 297mm;
+    }
+
+    section#tools{
+        display: none;
+    }
+}
+
+body {
+    background-color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow-x: hidden;
+}
+
+section {
+    width: 100%;
+}
+
+#error {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#error .container {
+    padding: 1rem;
+    width: 30%;
+    height: 50%;
+    border-radius: 20px 20px 20px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    flex-direction: column;
+}
+
+#banner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#banner img{
+    width : 80%;
+}
+
+#header .title {
+    font-weight: bold;
+    font-size: 1.8rem;
+    text-align: center;
+    margin: 1rem 0;
+}
+
+#header .nomor {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#header .nomor .wrapper-preview {
+    display: flex;
+    width: 70%;
+}
+
+#header .nomor .wrapper-output{
+    font-size: 1.5rem;
+    vertical-align: middle;
+}
+
+@media screen and (max-width: 1215px) {
+    #header .nomor .wrapper-preview {
+        width: 70%;
+    }
+}
+
+
+#header .nomor .wrapper-preview .text{
+    font-size: 1.5rem;
+    vertical-align: middle;
+    width: 20%;
+    padding: .25rem 0;
+}
+
+#header .nomor .wrapper-preview input{
+    width: 80%;
+    font-size: 1.2rem;
+}
+
+
+#body {
+    text-align: justify;
+    text-indent: 2rem;
+    margin-top: 2.5rem;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+#body div{
+    width: 70%;
+}
+
+@media screen and (max-width: 1215px) {
+    #body div{
+        width: 90%;
+    }
+}
+
+#body .template-text{
+    line-height: 1.5rem;
+}
+
+#body .list-kronologi table{
+    width: 100%;
+}
+
+#body .list-kronologi table tr td{
+    padding: .5rem;
+}
+
+#body .list-kronologi table tr td:nth-child(1){
+    vertical-align: top;
+    text-align: right;
+    width: 10%;
+}
+#body .list-kronologi table tr td:nth-child(2){
+    width: 80%;
+}
+
+#footer {
+    display: flex;
+    justify-content: center;
+    margin-top: 2.5rem;
+}
+
+#footer table{
+    width: 70%;
+}
+
+#footer table tr td{
+    padding: .25rem .75rem;
+    text-align: center;
+}
+
+#footer table tr:nth-child(1){
+    height: 4rem;
+}
+
+#footer table tr:nth-child(3){
+    height: 5rem;
+}
+#footer table tr:nth-child(5) td{ 
+    font-style: italic;
+    opacity: .7;
+}
+
+@media screen and (max-width: 1215px) {
+    #footer table{
+        width: 90%;
+    }
+}
+
+#tools {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    margin: 2rem 0;
+}

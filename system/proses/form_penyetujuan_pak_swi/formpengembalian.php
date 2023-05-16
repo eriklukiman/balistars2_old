@@ -67,6 +67,22 @@ if (!$dataCekUser || !$dataCekMenu) {
 
     $tahapan = ['Pak Swi'];
 
+    $dataPenyetujuanTerakhir = selectStatement(
+        $db,
+        'SELECT * FROM balistars_penyetujuan WHERE idPengajuan = ? AND statusPenyetujuan = ? AND jenisPengajuan = ? ORDER BY idPenyetujuan DESC LIMIT 1',
+        [$idPengembalian, 'Aktif', 'Pengembalian'],
+        'fetch'
+    );
+
+    if ($dataPenyetujuanTerakhir) {
+        if ($dataPenyetujuanTerakhir['hasil'] === 'Reject' && $dataPenyetujuanTerakhir['tahapan'] === 'Headoffice') {
+            $state = 'Reject Dari Headoffice';
+        } else {
+            $state = 'Pengajuan Cabang';
+        }
+    } else {
+        $state = 'Pengajuan Cabang';
+    }
 
 ?>
     <form id="formPengembalian">
@@ -119,14 +135,10 @@ if (!$dataCekUser || !$dataCekMenu) {
                     </div>
                     <div class="col-md-4 form-group">
                         <label for="linkSuratPernyataanCustomer">SURAT PERNYATAAN CUSTOMER</label>
-                        <div class="input-group">
-                            <input type="text" disabled id="linkSuratPernyataanCustomer" class="input-link form-control" placeholder="Link Surat Pernyataan Customer" value="<?= $dataUpdate['linkSuratPernyataanCustomer'] ?>">
-                            <div class="input-group-append">
-                                <span class="input-group-text">
-                                    <a target="_blank" tabindex="-1" href="<?= $dataUpdate['linkSuratPernyataanCustomer'] ?? '#' ?>" data-id="linkSuratPernyataanCustomer" class="btn <?= $dataUpdate['linkSuratPernyataanCustomer'] ? 'btn-danger' : 'btn-secondary' ?>"><i class="fas fa-external-link-alt"></i></a>
-                                </span>
-                            </div>
+                        <div>
+                            <a class="btn btn-primary h-100 w-100" href="<?= $BASE_URL_HTML ?>/system/proses/form_penyetujuan_pak_swi/template/surat_pengajuan/?id=<?= $idPengembalian ?>" target="_blank"><strong>VIEW SURAT</strong></a>
                         </div>
+                        <input type="hidden" name="linkSuratPernyataanCustomer" value="">
                     </div>
                     <div class="col-md-4 form-group">
                         <label for="linkNotaPenjualan">NOTA PENJUALAN</label>

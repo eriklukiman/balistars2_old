@@ -1,0 +1,1 @@
+DROP TABLE `balistars_data_surat_pengajuan`, `balistars_payment`, `balistars_pengajuan_additional`, `balistars_pengajuan_partisi`, `balistars_pengajuan_pengembalian`, `balistars_pengajuan_petty_cash`, `balistars_penyetujuan`;

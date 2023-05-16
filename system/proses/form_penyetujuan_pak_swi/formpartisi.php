@@ -67,6 +67,22 @@ if (!$dataCekUser || !$dataCekMenu) {
 
     $tahapan = ['Pak Swi'];
 
+    $dataPenyetujuanTerakhir = selectStatement(
+        $db,
+        'SELECT * FROM balistars_penyetujuan WHERE idPengajuan = ? AND statusPenyetujuan = ? AND jenisPengajuan = ? ORDER BY idPenyetujuan DESC LIMIT 1',
+        [$idPartisi, 'Aktif', 'Partisi'],
+        'fetch'
+    );
+
+    if ($dataPenyetujuanTerakhir) {
+        if ($dataPenyetujuanTerakhir['hasil'] === 'Reject' && $dataPenyetujuanTerakhir['tahapan'] === 'Headoffice') {
+            $state = 'Reject Dari Headoffice';
+        } else {
+            $state = 'Pengajuan Cabang';
+        }
+    } else {
+        $state = 'Pengajuan Cabang';
+    }
 
 ?>
     <form id="formPartisi">
@@ -194,10 +210,10 @@ if (!$dataCekUser || !$dataCekMenu) {
             <div class="col-md-4 form-group">
                 <label for="">DETAIL PENYETUJUAN</label>
                 <div class="d-flex" style="flex-direction: column; gap: 10px">
-                    <button type="button" class="w-75 btn btn-success" onclick="prosesPenyetujuan($(this), '<?= $jenisPengajuan ?>','<?= $idPengembalian ?>', 'Disetujui')">
+                    <button type="button" class="w-75 btn btn-success" onclick="prosesPenyetujuan($(this), '<?= $jenisPengajuan ?>','<?= $idPartisi ?>', 'Disetujui')">
                         <strong>DISETUJUI</strong>
                     </button>
-                    <button type="button" class="w-75 btn btn-danger" onclick="prosesPenyetujuan($(this), '<?= $jenisPengajuan ?>','<?= $idPengembalian ?>', 'Reject')">
+                    <button type="button" class="w-75 btn btn-danger" onclick="prosesPenyetujuan($(this), '<?= $jenisPengajuan ?>','<?= $idPartisi ?>', 'Reject')">
                         <strong>REJECT</strong>
                     </button>
                 </div>
